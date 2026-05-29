@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenMarket - Safe C2C Cloud Platform</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GreenMarket">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1161/1161388.png">
+
+    <link rel="manifest" href='data:application/manifest+json,{
+        "name": "GreenMarket Escrow Platform",
+        "short_name": "GreenMarket",
+        "start_url": ".",
+        "display": "standalone",
+        "background_color": "#064e3b",
+        "theme_color": "#064e3b",
+        "orientation": "portrait",
+        "icons": [{
+            "src": "https://cdn-icons-png.flaticon.com/512/1161/1161388.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }]
+    }'>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #064e3b;
+            --primary: #059669;
+            --primary-light: #34d399;
+            --accent-bg: #ecfdf5;
+            --bg-body: #f4f7f5;
+            --white: #ffffff;
+            --danger: #ef4444;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --verified-blue: #3b82f6;
+            --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 90px; -webkit-tap-highlight-color: transparent; }
+
+        /* --- AUTH SCREEN STYLE --- */
+        #auth-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #064e3b, #022c22); display: flex; align-items: center; justify-content: center; z-index: 20000; padding: 20px; }
+        .auth-card { background: var(--white); width: 100%; max-width: 400px; border-radius: 24px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; }
+        .auth-logo { font-size: 32px; color: var(--primary); font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .auth-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 25px; }
+        .auth-tabs { display: flex; background: #f3f4f6; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
+        .auth-tab { flex: 1; padding: 10px; border: none; background: none; font-weight: 700; font-size: 14px; cursor: pointer; border-radius: 10px; color: var(--text-muted); }
+        .auth-tab.active { background: var(--white); color: var(--primary-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .google-btn { background: #fafafa; border: 1.5px solid var(--border); color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 15px; font-weight: 700; }
+        .google-btn i { color: #ea4335; font-size: 18px; }
+        .auth-divider { margin: 20px 0; display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 12px; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
+        .auth-divider:not(:empty)::before { margin-right: .5em; }
+        .auth-divider:not(:empty)::after { margin-left: .5em; }
+
+        /* --- MAIN SYSTEM UI --- */
+        #app-content { display: none; }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; max-width: 350px; width: calc(100% - 40px); }
+        .toast-card { background: var(--white); border-left: 5px solid var(--primary); padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: transform 0.4s var(--ease-premium); font-weight: 600; font-size: 14px; }
+        .toast-card.show { transform: translateX(0); }
+        .toast-card.toast-error { border-left-color: var(--danger); color: var(--danger); }
+
+        .desktop-header { background-color: var(--primary-dark); color: var(--white); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .desktop-header .logo { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--primary-light); }
+        .desktop-nav { display: flex; gap: 10px; }
+        .nav-btn { background: none; border: none; color: var(--white); font-size: 15px; font-weight: 600; cursor: pointer; padding: 10px 20px; border-radius: 12px; display: flex; align-items: center; gap: 8px; }
+        .nav-btn.active { background-color: var(--primary); }
+
+        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--white); display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -4px 16px rgba(0,0,0,0.04); z-index: 1000; border-top: 1px solid var(--border); }
+        .mobile-nav-btn { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: 700; cursor: pointer; flex: 1; gap: 4px; }
+        .mobile-nav-btn.active { color: var(--primary); }
+
+        .main-container { max-width: 800px; width: 100%; margin: 20px auto; padding: 0 16px; }
+        .tab-content { display: none; opacity: 0; transform: translateY(15px); transition: opacity 0.4s var(--ease-premium), transform 0.4s var(--ease-premium); }
+        .tab-content.active { display: block; opacity: 1; transform: translateY(0); }
+
+        .card { background: var(--white); border-radius: 20px; padding: 24px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.015); margin-bottom: 20px; border: 1px solid var(--border); position: relative; }
+        h2 { color: var(--primary-dark); margin-bottom: 24px; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--primary-dark); }
+        input, textarea, select { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; background-color: #fafbfa; }
+        input:focus { outline: none; border-color: var(--primary); background-color: var(--white); }
+
+        .btn { padding: 14px 22px; border: none; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; width: 100%; }
+        .btn-primary { background-color: var(--primary); color: var(--white); }
+        .btn-danger { background-color: var(--danger); color: var(--white); }
+
+        /* --- PRODUCT GRID --- */
+        .product-card { border: 1px solid var(--border); padding: 16px; }
+        .product-img-holder { width: 100%; height: 240px; border-radius: 14px; overflow: hidden; margin-bottom: 16px; position: relative; background-color: #f3f4f6; }
+        .product-img-holder img { width: 100%; height: 100%; object-fit: cover; }
+        .product-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .product-title { font-size: 18px; font-weight: 700; color: var(--primary-dark); }
+        .product-price { background-color: var(--accent-bg); color: var(--primary); padding: 6px 16px; border-radius: 30px; font-weight: 800; }
+        .action-bar { display: flex; gap: 10px; margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }
+
+        .image-upload-preview { width: 100%; height: 160px; border: 2.5px dashed var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 700; cursor: pointer; background-size: cover; background-position: center; }
+
+        /* --- REALTIME CHAT ROOM WINDOW --- */
+        .chat-container { display: flex; background: var(--white); border-radius: 20px; height: 560px; border: 1px solid var(--border); overflow: hidden; }
+        .chat-sidebar { width: 35%; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: #fafbfa; }
+        .sidebar-header { padding: 18px; font-weight: 700; border-bottom: 1px solid var(--border); color: var(--primary-dark); }
+        .chat-list { flex: 1; overflow-y: auto; }
+        .chat-item { padding: 16px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid #f3f4f6; transition: background 0.2s; }
+        .chat-item:hover, .chat-item.active { background-color: var(--accent-bg); }
+        .chat-avatar { width: 40px; height: 40px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-weight: 700; }
+        .chat-item-info { flex: 1; overflow: hidden; }
+        .chat-item-name { font-weight: 700; font-size: 14px; }
+        .chat-item-preview { font-size: 12px; color: var(--text-muted); text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+        
+        .chat-window { width: 65%; display: flex; flex-direction: column; background: var(--white); }
+        .window-header { padding: 15px 18px; border-bottom: 1px solid var(--border); font-weight: 700; display: flex; align-items: center; justify-content: space-between; background: #fafbfa; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #fcfdfc; }
+        .msg { max-width: 75%; padding: 12px 16px; border-radius: 16px; font-size: 14px; }
+        .msg.sent { background-color: var(--primary); color: var(--white); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg.received { background-color: #f3f4f6; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+        .chat-input-area input { flex: 1; border-radius: 25px; padding: 14px 20px; }
+        .btn-send { width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: var(--white); min-height: 50px; padding: 0; }
+
+        @media (max-width: 767px) {
+            .desktop-header { display: none; }
+            .chat-container { height: calc(100vh - 170px); }
+            .chat-sidebar { width: 100%; }
+            .chat-window { width: 100%; display: none; }
+            .chat-container.active-conversation .chat-sidebar { display: none; }
+            .chat-container.active-conversation .chat-window { display: flex; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="auth-card">
+            <div class="auth-logo"><i class="fa-solid fa-shield-halved"></i> Green Market</div>
+            <div class="auth-subtitle">စုံလင်ပြီး စိတ်ချရဆုံးသော C2C Escrow ကွန်ရက်</div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login-mode" onclick="toggleAuthMode('login')">Login</button>
+                <button class="auth-tab" id="tab-signup-mode" onclick="toggleAuthMode('signup')">Sign Up</button>
+            </div>
+
+            <div class="form-group">
+                <label>အီးမေးလ် (Email)</label>
+                <input type="email" id="auth-email" placeholder="example@email.com">
+            </div>
+            <div class="form-group">
+                <label>လျှို့ဝှက်နံပါတ် (Password)</label>
+                <input type="password" id="auth-password" placeholder="••••••••">
+            </div>
+
+            <button class="btn btn-primary" id="emailAuthBtn" style="margin-top:10px;"><i class="fa-solid fa-key"></i> <span id="auth-btn-text">အကောင့်ထဲဝင်မည်</span></button>
+            
+            <div class="auth-divider">သို့မဟုတ်</div>
+            
+            <button class="btn google-btn" id="googleAuthBtn"><i class="fa-brands fa-google"></i> Google ဖြင့် တိုက်ရိုက်ဝင်မည်</button>
+        </div>
+    </div>
+
+    <div id="app-content">
+        <div id="toast-container"></div>
+
+        <header class="desktop-header">
+            <div class="logo"><i class="fa-solid fa-shield-halved"></i> Green Market</div>
+            <nav class="desktop-nav">
+                <button class="nav-btn active tab-btn-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i> Home</button>
+                <button class="nav-btn tab-btn-create" onclick="switchTab('create')"><i class="fa-solid fa-circle-plus"></i> တင်ရန်</button>
+                <button class="nav-btn tab-btn-chat" onclick="switchTab('chat')"><i class="fa-solid fa-comments"></i> မက်ဆေ့ခ်ျ</button>
+                <button class="nav-btn tab-btn-profile" onclick="switchTab('profile')"><i class="fa-solid fa-user-gear"></i> Settings</button>
+            </nav>
+        </header>
+
+        <div class="mobile-bottom-nav">
+            <button class="mobile-nav-btn active tab-btn-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i>Home</button>
+            <button class="mobile-nav-btn tab-btn-create" onclick="switchTab('create')"><i class="fa-solid fa-circle-plus"></i>တင်ရန်</button>
+            <button class="mobile-nav-btn tab-btn-chat" onclick="switchTab('chat')"><i class="fa-solid fa-comments"></i>မက်ဆေ့ခ်ျ</button>
+            <button class="mobile-nav-btn tab-btn-profile" onclick="switchTab('profile')"><i class="fa-solid fa-user-gear"></i>Settings</button>
+        </div>
+
+        <div class="main-container">
+            <div id="tab-home" class="tab-content active">
+                <div id="feed-container"></div>
+            </div>
+
+            <div id="tab-create" class="tab-content">
+                <div class="card">
+                    <h2><i class="fa-solid fa-square-plus"></i> ပစ္စည်းအသစ်တင်ရန်</h2>
+                    <div class="form-group">
+                        <label>ပစ္စည်းအမည်</label>
+                        <input type="text" id="p-title" placeholder="Product Name">
+                    </div>
+                    <div class="form-group">
+                        <label>စျေးနှုန်း ($)</label>
+                        <input type="number" id="p-price" placeholder="Price">
+                    </div>
+                    <div class="form-group">
+                        <label>ပစ္စည်းပုံတင်ရန်</label>
+                        <input type="file" id="p-image-file" accept="image/*" style="display:none">
+                        <div class="image-upload-preview" id="imgUploadBtn">
+                            <div id="previewText"><i class="fa-solid fa-image"></i> ပုံရွေးချယ်ရန်</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>အသေးစိတ်အချက်အလက်</label>
+                        <textarea id="p-desc" rows="3" placeholder="Description..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" id="publishBtn">Cloud ပေါ်သို့ တင်မည်</button>
+                </div>
+            </div>
+
+            <div id="tab-chat" class="tab-content">
+                <div class="chat-container" id="chatMainBox">
+                    <div class="chat-sidebar">
+                        <div class="sidebar-header"><i class="fa-solid fa-users"></i> အွန်လိုင်းအသုံးပြုသူများ</div>
+                        <div class="chat-list" id="chatListContainer"></div>
+                    </div>
+                    <div class="chat-window">
+                        <div class="window-header">
+                            <button class="back-btn" onclick="document.getElementById('chatMainBox').classList.remove('active-conversation')" style="background:none; border:none; color:var(--primary); font-weight:bold; display:none;"><i class="fa-solid fa-arrow-left"></i> နောက်သို့</button>
+                            <div id="chatWindowHeader">စကားပြောခန်း</div>
+                            <div style="font-size:11px; background:#e0f2fe; color:var(--verified-blue); padding:4px 10px; border-radius:20px;"><i class="fa-solid fa-lock"></i> Escrow Ready</div>
+                        </div>
+                        <div class="chat-messages" id="chatMessagesContainer"></div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chatInputField" placeholder="စာရိုက်ပါ...">
+                            <button class="btn btn-send" id="sendMsgBtn"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-profile" class="tab-content">
+                <div class="card" style="text-align: center;">
+                    <h2><i class="fa-solid fa-user-shield"></i> အကောင့်အချက်အလက်</h2>
+                    <div class="form-group"><label>အမည်</label><input type="text" id="user-name" readonly></div>
+                    <div class="form-group"><label>အီးမေးလ်</label><input type="text" id="user-email" readonly></div>
+                    <button class="btn btn-danger" id="logoutBtn" style="margin-top:20px;"><i class="fa-solid fa-right-from-bracket"></i> အကောင့်မှ ထွက်မည်</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMuvAQcAfeSDEtWaFdMA8QHBBkGppIy6U",
+            authDomain: "greenmarket373738vj.firebaseapp.com",
+            projectId: "greenmarket373738vj",
+            storageBucket: "greenmarket373738vj.firebasestorage.app",
+            messagingSenderId: "598053665896",
+            appId: "1:598053665896:web:b378182b1f916f46610fdd",
+            measurementId: "G-58N74CPFSH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        let currentAuthMode = "login";
+        let localUser = null;
+        let globalPosts = [];
+        let globalChats = [];
+        let activeUsersInNetwork = [];
+        let activeChatUser = null;
+        let uploadedImageBase64 = "";
+
+        // --- AUTHENTICATION LIFECYCLE MONITOR ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                localUser = user;
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+
+                const sanitizedName = user.displayName || user.email.split('@')[0];
+                document.getElementById('user-name').value = sanitizedName;
+                document.getElementById('user-email').value = user.email;
+
+                // Sync user into real database node
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    name: sanitizedName,
+                    email: user.email,
+                    timestamp: Date.now()
+                }, { merge: true });
+
+                initRealtimeSync();
+            } else {
+                localUser = null;
+                document.getElementById('auth-screen').style.display = 'flex';
+                document.getElementById('app-content').style.display = 'none';
+            }
+        });
+
+        // --- AUTH ACTION ROUTERS ---
+        async function handleEmailAuth() {
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-password').value;
+
+            if(!email || !pass) { showToast("ဖြည့်စွက်ရန် ကျန်ရှိနေပါသည်ဗျာ။", "error"); return; }
+
+            try {
+                if(currentAuthMode === "login") {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                    showToast("ဝင်ရောက်ခြင်း အောင်မြင်ပါသည်။");
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                    showToast("အကောင့်အသစ် ဆောက်လုပ်ပြီးပါပြီ။");
+                }
+            } catch(err) {
+                showToast(err.message.replace("Firebase:", ""), "error");
+            }
+        }
+
+        async function handleGoogleAuth() {
+            try {
+                await signInWithPopup(auth, googleProvider);
+                showToast("Google ဖြင့် အောင်မြင်စွာ ဝင်ရောက်ပြီးပါပြီ။");
+            } catch(err) {
+                showToast(err.message, "error");
+            }
+        }
+
+        // --- ENGINE REALTIME SYNC (FIRESTORE) ---
+        function initRealtimeSync() {
+            // 1. Synchronize All Active Cloud Users
+            onSnapshot(collection(db, "users"), (snapshot) => {
+                activeUsersInNetwork = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if(data.uid !== localUser.uid) activeUsersInNetwork.push(data);
+                });
+                renderChatList();
+            });
+
+            // 2. Synchronize Feed Posts
+            onSnapshot(query(collection(db, "posts"), orderBy("timestamp", "desc")), (snapshot) => {
+                globalPosts = [];
+                snapshot.forEach(doc => globalPosts.push({ id: doc.id, ...doc.data() }));
+                displayFeed();
+            });
+
+            // 3. Synchronize Network Wide Core Chat
+            onSnapshot(query(collection(db, "chats"), orderBy("timestamp", "asc")), (snapshot) => {
+                globalChats = [];
+                snapshot.forEach(doc => globalChats.push(doc.data()));
+                renderChatMessages();
+            });
+        }
+
+        // --- CHAT DISPATCH SYSTEM (FIXED BUG) ---
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInputField');
+            const text = input.value.trim();
+            if(!text || !activeChatUser) return;
+
+            const myName = localUser.displayName || localUser.email.split('@')[0];
+            const computedRoomId = [myName, activeChatUser].sort().join("##");
+
+            await addDoc(collection(db, "chats"), {
+                room: computedRoomId,
+                sender: myName,
+                text: text,
+                timestamp: Date.now()
+            });
+
+            input.value = '';
+        }
+
+        function renderChatList() {
+            const container = document.getElementById('chatListContainer');
+            container.innerHTML = '';
+
+            if(activeUsersInNetwork.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:30px; font-size:13px; color:var(--text-muted);">အွန်လိုင်းပေါ်တွင် အခြားအသုံးပြုသူ မရှိသေးပါဗျာ။</div>`;
+                return;
+            }
+
+            activeUsersInNetwork.forEach(user => {
+                const isActive = (user.name === activeChatUser) ? 'active' : '';
+                container.innerHTML += `
+                    <div class="chat-item ${isActive}" onclick="selectChatUser('${user.name}')">
+                        <div class="chat-avatar">${user.name.charAt(0).toUpperCase()}</div>
+                        <div class="chat-item-info">
+                            <div class="chat-item-name">${user.name}</div>
+                            <div class="chat-item-preview">နှိပ်၍ စကားပြောခန်းသို့ဝင်ပါ...</div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function renderChatMessages() {
+            const container = document.getElementById('chatMessagesContainer');
+            container.innerHTML = '';
+            if(!activeChatUser) { container.innerHTML = `<div style="text-align:center; padding-top:40px; color:var(--text-muted);">စကားပြောရန် အကောင့်တစ်ခု ရွေးချယ်ပါဗျာ။</div>`; return; }
+
+            const myName = localUser.displayName || localUser.email.split('@')[0];
+            const currentRoomId = [myName, activeChatUser].sort().join("##");
+
+            const filteredRoomMsgs = globalChats.filter(m => m.room === currentRoomId);
+
+            filteredRoomMsgs.forEach(m => {
+                const side = (m.sender === myName) ? 'sent' : 'received';
+                container.innerHTML += `<div class="msg ${side}">${m.text}</div>`;
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // --- CORE INTERFACE LOGIC ---
+        function displayFeed() {
+            const feed = document.getElementById('feed-container');
+            feed.innerHTML = '';
+
+            if(globalPosts.length === 0) { feed.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:40px 0;">ရောင်းချမည့် ပစ္စည်းများ မရှိသေးပါဗျာ။</p>`; return; }
+
+            globalPosts.forEach(post => {
+                feed.innerHTML += `
+                    <div class="card product-card">
+                        <div class="product-img-holder"><img src="${post.image}"></div>
+                        <div class="product-header">
+                            <div class="product-title">${post.title}</div>
+                            <div class="product-price">$${post.price}</div>
+                        </div>
+                        <p style="font-size:13px; color:var(--text-muted); margin-top:4px;"><i class="fa-solid fa-user"></i> Seller: ${post.seller}</p>
+                        <p style="font-size:14px; margin-top:10px; color:#4b5563;">${post.desc}</p>
+                        <div class="action-bar">
+                            <button class="btn btn-primary" onclick="openDirectChat('${post.seller}')"><i class="fa-solid fa-comments"></i> Chat Secure</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // --- ADVANCED QUALITY COMPRESSION ENGINES ---
+        function processImageCompression(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const sizeLimit = 500;
+                    let w = img.width, h = img.height;
+
+                    if (w > h && w > sizeLimit) { h *= sizeLimit / w; w = sizeLimit; }
+                    else if (h > sizeLimit) { w *= sizeLimit / h; h = sizeLimit; }
+
+                    canvas.width = w; canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    uploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.5);
+
+                    document.getElementById('imgUploadBtn').style.backgroundImage = `url(${uploadedImageBase64})`;
+                    document.getElementById('previewText').style.display = 'none';
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function createCloudPost() {
+            const title = document.getElementById('p-title').value.trim();
+            const price = document.getElementById('p-price').value.trim();
+            const desc = document.getElementById('p-desc').value.trim();
+
+            if(!title || !price || !uploadedImageBase64) { showToast("အချက်အလက် ပြည့်စုံစွာ ဖြည့်သွင်းပါဗျာ။", "error"); return; }
+
+            await addDoc(collection(db, "posts"), {
+                title, price, desc, image: uploadedImageBase64,
+                seller: localUser.displayName || localUser.email.split('@')[0],
+                timestamp: Date.now()
+            });
+
+            document.getElementById('p-title').value = '';
+            document.getElementById('p-price').value = '';
+            document.getElementById('p-desc').value = '';
+            document.getElementById('imgUploadBtn').style.backgroundImage = '';
+            document.getElementById('previewText').style.display = 'block';
+            uploadedImageBase64 = "";
+
+            showToast("ပစ္စည်းအား Cloud ပေါ်သို့ တင်ပြီးပါပြီ။");
+            switchTab('home');
+        }
+
+        // EXPOSE TO CORE COMPONENT SCOPE
+        window.switchTab = function(name) {
+            document.querySelectorAll('.tab-content').forEach(el => { el.classList.remove('active'); el.style.display='none'; });
+            document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById(`tab-${name}`);
+            target.style.display = 'block'; setTimeout(() => target.classList.add('active'), 40);
+            document.querySelectorAll(`.tab-btn-${name}`).forEach(el => el.classList.add('active'));
+        };
+
+        window.toggleAuthMode = function(mode) {
+            currentAuthMode = mode;
+            document.getElementById('tab-login-mode').classList.toggle('active', mode === 'login');
+            document.getElementById('tab-signup-mode').classList.toggle('active', mode === 'signup');
+            document.getElementById('auth-btn-text').innerText = mode === 'login' ? 'အကောင့်ထဲဝင်မည်' : 'အကောင့်အသစ်ဆောက်မည်';
+        };
+
+        window.selectChatUser = function(username) {
+            activeChatUser = username;
+            document.getElementById('chatWindowHeader').innerText = username;
+            document.getElementById('chatMainBox').classList.add('active-conversation');
+            renderChatList();
+            renderChatMessages();
+        };
+
+        window.openDirectChat = function(seller) {
+            if(seller === (localUser.displayName || localUser.email.split('@')[0])) { showToast("မိမိကိုယ်တိုင် တင်ထားသော ပစ္စည်းဖြစ်သည်ဗျာ။", "error"); return; }
+            window.switchTab('chat');
+            window.selectChatUser(seller);
+        };
+
+        window.showToast = function(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const box = document.createElement('div');
+            box.className = `toast-card ${type === 'error' ? 'toast-error' : ''}`;
+            box.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${msg}</span>`;
+            container.appendChild(box); setTimeout(() => box.classList.add('show'), 20);
+            setTimeout(() => { box.classList.remove('show'); setTimeout(() => box.remove(), 400); }, 3000);
+        };
+
+        // BIND INTERFACE EVENTS
+        document.getElementById('emailAuthBtn').addEventListener('click', handleEmailAuth);
+        document.getElementById('googleAuthBtn').addEventListener('click', handleGoogleAuth);
+        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+        document.getElementById('imgUploadBtn').addEventListener('click', () => document.getElementById('p-image-file').click());
+        document.getElementById('p-image-file').addEventListener('change', processImageCompression);
+        document.getElementById('publishBtn').addEventListener('click', createCloudPost);
+        document.getElementById('sendMsgBtn').addEventListener('click', sendChatMessage);
+        document.getElementById('chatInputField').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); });
+    </script>
+</body>
+</html>

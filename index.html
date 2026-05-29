@@ -129,7 +129,7 @@
         .msg img { max-width: 150px; max-height: 150px; border-radius: 8px; display: block; object-fit: cover; cursor: pointer; }
         .msg-delete-btn { font-size: 11px; opacity: 0.4; cursor: pointer; transition: 0.2s; color: var(--white); }
         .msg-delete-btn:hover { opacity: 1; color: var(--danger); }
-        .msg.received .msg-delete-btn { display: none; } /* သူများဆီကစာကို ဖျက်ခွင့်မရှိစေရန် */
+        .msg.received .msg-delete-btn { display: none; } 
         
         .chat-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--white); align-items: center; }
         .chat-input-area input { flex: 1; border-radius: 25px; padding: 14px 20px; }
@@ -141,7 +141,6 @@
         .modal-content { background: var(--white); width: 100%; max-width: 420px; border-radius: 20px; padding: 24px; position: relative; text-align: center; max-height: 90vh; overflow-y: auto; }
         .modal-close { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 20px; color: var(--text-muted); background: none; border: none; }
         
-        /* User Wall inside Modal */
         #userWallPosts { max-height: 220px; overflow-y: auto; margin-top: 15px; padding: 5px; background: var(--bg-body); border-radius: 12px; }
 
         @media (max-width: 767px) {
@@ -263,7 +262,6 @@
                             <button class="btn btn-secondary btn-chat-img" onclick="document.getElementById('chat-image-input').click()">
                                 <i class="fa-solid fa-camera"></i>
                             </button>
-                            
                             <input type="text" id="chatInputField" placeholder="စာရိုက်ပါ...">
                             <button class="btn btn-primary btn-send" id="sendMsgBtn"><i class="fa-solid fa-paper-plane"></i></button>
                         </div>
@@ -329,6 +327,27 @@
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, deleteDoc, updateDoc, getDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+        // --- TELEGRAM BOT INTEGRATION ---
+        const TELEGRAM_BOT_TOKEN = '8791510118:AAFQsQHtj3X-deb1tUbaUmhVqvM6n1-r0GM'; 
+        const ADMIN_CHAT_ID = '8693193416'; 
+
+        window.sendToTelegramAdmin = async function(message) {
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: ADMIN_CHAT_ID,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                });
+            } catch (error) {
+                console.error("Telegram သို့ ပို့ရာတွင် အမှားအယွင်းဖြစ်နေပါသည်", error);
+            }
+        };
+
         const firebaseConfig = {
             apiKey: "AIzaSyDMuvAQcAfeSDEtWaFdMA8QHBBkGppIy6U",
             authDomain: "greenmarket373738vj.firebaseapp.com",
@@ -355,7 +374,6 @@
             document.body.classList.add('dark-mode');
         }
 
-        // --- CUSTOM CONFIRM UI FUNCTION ---
         window.showConfirmUI = function(msg, callback) {
             document.getElementById('confirmMessage').innerText = msg;
             document.getElementById('confirmYesBtn').onclick = function() {
@@ -365,7 +383,6 @@
             openModal('customConfirmModal');
         };
 
-        // --- AUTH MONITOR ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 localUser = user;
@@ -397,7 +414,6 @@
             }
         });
 
-        // --- AUTH ACTIONS ---
         window.handleEmailAuth = async function() {
             const email = document.getElementById('auth-email').value.trim();
             const pass = document.getElementById('auth-password').value;
@@ -424,7 +440,6 @@
             document.getElementById('auth-btn-text').innerText = mode === 'login' ? 'အကောင့်ထဲဝင်မည်' : 'အကောင့်အသစ်ဆောက်မည်';
         };
 
-        // --- REALTIME SYNC & NOTIFICATIONS ---
         function initRealtimeSync() {
             onSnapshot(collection(db, "users"), (snapshot) => {
                 activeUsersInNetwork = [];
@@ -437,7 +452,6 @@
                         activeUsersInNetwork.push(data); 
                     }
                 });
-                // Admin Account အား Chat list တွင် အမြဲထည့်သွင်းထားရန်
                 if(!adminExists) {
                     activeUsersInNetwork.unshift({ uid: 'admin_uid', name: 'Platform Admin', phone: 'Official Support' });
                 }
@@ -460,12 +474,10 @@
                 snapshot.forEach(doc => globalChats.push({ id: doc.id, ...doc.data() }));
                 
                 renderChatMessages();
-                renderChatList(); // Message Preview များကို update လုပ်ရန်
+                renderChatList(); 
 
-                // NOTIFICATION SYSTEM (ပြင်ဆင်ပြီး)
                 if (!isInitialLoad) {
                     incomingMessages.forEach(msg => {
-                        // ကိုယ်နဲ့သက်ဆိုင်တဲ့ Room ဟုတ်မဟုတ် စစ်ဆေးခြင်း
                         if (msg.room.includes(localUser.uid) && msg.senderUid !== localUser.uid) {
                             const isChatTabActive = document.querySelector('.tab-btn-chat').classList.contains('active');
                             if (activeChatUid !== msg.senderUid || !isChatTabActive) {
@@ -480,7 +492,6 @@
             });
         }
 
-        // --- FEED RENDERING ---
         window.displayFeed = function(showOnlySaved = false) {
             const feed = document.getElementById('feed-container');
             feed.innerHTML = '';
@@ -532,7 +543,6 @@
             });
         };
 
-        // --- USER WALL (VIEW USER PROFILE) ---
         window.viewUserProfile = async function(uid) {
             let user = activeUsersInNetwork.find(u => u.uid === uid);
             if(!user && uid === 'admin_uid') user = { name: 'Platform Admin', phone: 'Official Support' };
@@ -542,7 +552,6 @@
             document.getElementById('modalUserName').innerText = user.name;
             document.getElementById('modalUserPhone').innerText = user.phone || "No phone or bio updated.";
             
-            // Build User Wall Listings
             const wallContainer = document.getElementById('userWallPosts');
             wallContainer.innerHTML = `<h4 style="font-size:13px; text-align:left; color:var(--primary); margin-bottom:8px;"><i class="fa-solid fa-boxes-stacked"></i> တင်ထားသော ပစ္စည်းများ</h4>`;
             
@@ -566,7 +575,6 @@
             openModal('userProfileModal');
         }
 
-        // --- CUSTOM UI ACTIONS ---
         window.deletePost = function(postId) {
             showConfirmUI("ဒီပစ္စည်းကို အမှန်တကယ် ဖျက်မှာလား?", async () => {
                 await deleteDoc(doc(db, "posts", postId)); showToast("ဖျက်ပြီးပါပြီ");
@@ -579,10 +587,16 @@
             });
         }
 
+        // --- TELEGRAM INTEGRATION: Report ---
         window.reportPost = function(postId) {
             showConfirmUI("ဤပစ္စည်းအား Admin ထံ Report ပို့မှာ သေချာပါသလား?", async () => {
                 await addDoc(collection(db, "reports"), { postId, reporterUid: localUser.uid, timestamp: Date.now() });
                 showToast("Admin ထံသို့ Report ပို့ပြီးပါပြီ။");
+
+                // Telegram သို့ လှမ်းပို့ခြင်း
+                const userName = document.getElementById('user-name').value;
+                const msg = `🚨 <b>New Report Alert</b> 🚨\n\n<b>User:</b> ${userName}\n<b>Post ID:</b> ${postId}\nအထက်ပါ ပစ္စည်းအား စစ်ဆေးရန် Report တင်ထားပါသည်။`;
+                sendToTelegramAdmin(msg);
             });
         }
 
@@ -598,7 +612,6 @@
 
         window.showSavedPosts = function() { switchTab('home'); document.getElementById('searchInput').value = ''; displayFeed(true); showToast("သိမ်းထားသော ပစ္စည်းများပြသနေသည်"); }
 
-        // --- PRODUCT UPLOAD ---
         document.getElementById('p-image-file').addEventListener('change', (e) => {
             const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
@@ -633,19 +646,27 @@
             showToast("ပစ္စည်းတင်ပြီးပါပြီ။"); switchTab('home');
         });
 
-        // --- CHAT SYSTEM LOGIC ---
+        // --- TELEGRAM INTEGRATION: Chat System ---
         window.sendChatMessage = async function() {
             const input = document.getElementById('chatInputField');
             const text = input.value.trim();
             if(!text || !activeChatUid) return;
             const computedRoomId = [localUser.uid, activeChatUid].sort().join("_");
+            
             await addDoc(collection(db, "chats"), { room: computedRoomId, senderUid: localUser.uid, text: text, type: 'text', timestamp: Date.now() });
+            
+            // Admin ထံသို့ စာပို့ခြင်းဖြစ်ပါက Telegram သို့ပါ Noti ပို့မည်
+            if (activeChatUid === 'admin_uid') {
+                const userName = document.getElementById('user-name').value;
+                const msg = `💬 <b>Message from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> ${text}\n\n<i>Platform ထဲဝင်၍ ပြန်စာပို့ပါ။</i>`;
+                sendToTelegramAdmin(msg);
+            }
+
             input.value = '';
         }
         document.getElementById('sendMsgBtn').addEventListener('click', sendChatMessage);
         document.getElementById('chatInputField').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); });
 
-        // Chat Box Image Sharing Integration
         document.getElementById('chat-image-input').addEventListener('change', (e) => {
             const file = e.target.files[0]; if (!file || !activeChatUid) return;
             const reader = new FileReader();
@@ -654,13 +675,20 @@
                 img.onload = async function() {
                     const canvas = document.createElement('canvas');
                     let w = img.width, h = img.height;
-                    if (w > 400) { h *= 400 / w; w = 400; } // chat အတွက် ပုံအကျဥ်းချုံ့ခြင်း
+                    if (w > 400) { h *= 400 / w; w = 400; } 
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                     let chatImgBase64 = canvas.toDataURL('image/jpeg', 0.5);
                     
                     const computedRoomId = [localUser.uid, activeChatUid].sort().join("_");
                     await addDoc(collection(db, "chats"), { room: computedRoomId, senderUid: localUser.uid, text: "", image: chatImgBase64, type: 'image', timestamp: Date.now() });
+
+                    // Admin ထံသို့ ပုံပို့ခြင်းဖြစ်ပါက Telegram သို့ပါ Noti ပို့မည်
+                    if (activeChatUid === 'admin_uid') {
+                        const userName = document.getElementById('user-name').value;
+                        const msg = `📷 <b>Image from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> (ဓာတ်ပုံတစ်ပုံ ပို့လိုက်ပါသည်)\n\n<i>Platform ထဲဝင်၍ စစ်ဆေးပါ။</i>`;
+                        sendToTelegramAdmin(msg);
+                    }
                 };
                 img.src = evt.target.result;
             };
@@ -674,21 +702,17 @@
             });
         }
 
-        // CHAT SIDEBAR LIST WITH PREVIEW (ပြင်ဆင်ပြီး)
         function renderChatList() {
             const container = document.getElementById('chatListContainer'); 
             container.innerHTML = '';
             
-            // စကားပြောဖူးသူများနှင့် လက်ရှိရွေးချယ်ထားသူကိုသာ စစ်ထုတ်ခြင်း
             const filteredUsers = activeUsersInNetwork.filter(user => {
                 const currentRoomId = [localUser.uid, user.uid].sort().join("_");
                 const hasChatHistory = globalChats.some(m => m.room === currentRoomId);
                 const isCurrentlySelected = (user.uid === activeChatUid);
-                
                 return hasChatHistory || isCurrentlySelected;
             });
 
-            // စကားပြောဖူးသူ တစ်ယောက်မှ မရှိသေးလျှင်
             if (filteredUsers.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding:30px 20px; color:var(--text-muted); font-size:13px;">
                     <i class="fa-solid fa-message" style="font-size:24px; color:var(--border); margin-bottom:10px;"></i><br>
@@ -721,7 +745,6 @@
             });
         }
 
-        // CHAT WINDOW MESSAGES RENDERING
         function renderChatMessages() {
             const container = document.getElementById('chatMessagesContainer'); container.innerHTML = '';
             if(!activeChatUid) return;
@@ -730,10 +753,7 @@
             globalChats.filter(m => m.room === currentRoomId).forEach(m => {
                 const side = (m.senderUid === localUser.uid) ? 'sent' : 'received';
                 let content = m.type === 'image' ? `<img src="${m.image}" onclick="window.open('${m.image}')">` : m.text;
-                
-                // စာဖျက်ရန် Trash Icon ထည့်သွင်းခြင်း
                 let deleteIcon = (m.senderUid === localUser.uid) ? `<i class="fa-solid fa-trash-can msg-delete-btn" onclick="deleteChatMessage('${m.id}')"></i>` : '';
-
                 container.innerHTML += `<div class="msg ${side}"><div>${content}</div>${deleteIcon}</div>`;
             });
             container.scrollTop = container.scrollHeight;
@@ -752,7 +772,6 @@
         };
         window.closeChatMobile = function() { document.getElementById('chatMainBox').classList.remove('active-conversation'); activeChatUid = null; }
 
-        // --- APPLICATION UTILS ---
         window.switchTab = function(name) {
             document.querySelectorAll('.tab-content').forEach(el => { el.classList.remove('active'); el.style.display='none'; });
             document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(el => el.classList.remove('active'));

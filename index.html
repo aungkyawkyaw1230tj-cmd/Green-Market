@@ -3,256 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenMarket - Safe C2C Cloud Platform</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="GreenMarket">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1161/1161388.png">
-
-    <link rel="manifest" href='data:application/manifest+json,{
-        "name": "GreenMarket Escrow Platform",
-        "short_name": "GreenMarket",
-        "start_url": ".",
-        "display": "standalone",
-        "background_color": "#064e3b",
-        "theme_color": "#064e3b",
-        "orientation": "portrait",
-        "icons": [{
-            "src": "https://cdn-icons-png.flaticon.com/512/1161/1161388.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any maskable"
-        }]
-    }'>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>GreenMarket - Local Marketplace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --primary-dark: #064e3b;
-            --primary: #059669;
-            --primary-light: #34d399;
-            --accent-bg: #ecfdf5;
-            --bg-body: #f4f7f5;
-            --white: #ffffff;
-            --danger: #ef4444;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --verified-blue: #3b82f6;
-            --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
+            --primary-color: #2e7d32;
+            --primary-light: #4caf50;
+            --bg-color: #f5f5f5;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --danger-color: #c62828;
+            --border-radius: 8px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 90px; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 70px; }
 
-        /* --- AUTH SCREEN STYLE --- */
-        #auth-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #064e3b, #022c22); display: flex; align-items: center; justify-content: center; z-index: 20000; padding: 20px; }
-        .auth-card { background: var(--white); width: 100%; max-width: 400px; border-radius: 24px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; }
-        .auth-logo { font-size: 32px; color: var(--primary); font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .auth-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 25px; }
-        .auth-tabs { display: flex; background: #f3f4f6; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
-        .auth-tab { flex: 1; padding: 10px; border: none; background: none; font-weight: 700; font-size: 14px; cursor: pointer; border-radius: 10px; color: var(--text-muted); }
-        .auth-tab.active { background: var(--white); color: var(--primary-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .google-btn { background: #fafafa; border: 1.5px solid var(--border); color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 15px; font-weight: 700; }
-        .google-btn i { color: #ea4335; font-size: 18px; }
-        .auth-divider { margin: 20px 0; display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 12px; }
-        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
-        .auth-divider:not(:empty)::before { margin-right: .5em; }
-        .auth-divider:not(:empty)::after { margin-left: .5em; }
-
-        /* --- MAIN SYSTEM UI --- */
-        #app-content { display: none; }
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; max-width: 350px; width: calc(100% - 40px); }
-        .toast-card { background: var(--white); border-left: 5px solid var(--primary); padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: transform 0.4s var(--ease-premium); font-weight: 600; font-size: 14px; }
-        .toast-card.show { transform: translateX(0); }
-        .toast-card.toast-error { border-left-color: var(--danger); color: var(--danger); }
-
-        .desktop-header { background-color: var(--primary-dark); color: var(--white); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .desktop-header .logo { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--primary-light); }
-        .desktop-nav { display: flex; gap: 10px; }
-        .nav-btn { background: none; border: none; color: var(--white); font-size: 15px; font-weight: 600; cursor: pointer; padding: 10px 20px; border-radius: 12px; display: flex; align-items: center; gap: 8px; }
-        .nav-btn.active { background-color: var(--primary); }
-
-        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--white); display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -4px 16px rgba(0,0,0,0.04); z-index: 1000; border-top: 1px solid var(--border); }
-        .mobile-nav-btn { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: 700; cursor: pointer; flex: 1; gap: 4px; }
-        .mobile-nav-btn.active { color: var(--primary); }
-
-        .main-container { max-width: 800px; width: 100%; margin: 20px auto; padding: 0 16px; }
-        .tab-content { display: none; opacity: 0; transform: translateY(15px); transition: opacity 0.4s var(--ease-premium), transform 0.4s var(--ease-premium); }
-        .tab-content.active { display: block; opacity: 1; transform: translateY(0); }
-
-        .card { background: var(--white); border-radius: 20px; padding: 24px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.015); margin-bottom: 20px; border: 1px solid var(--border); position: relative; }
-        h2 { color: var(--primary-dark); margin-bottom: 24px; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        
-        .form-group { margin-bottom: 16px; text-align: left; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--primary-dark); }
-        input, textarea, select { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; background-color: #fafbfa; }
-        input:focus { outline: none; border-color: var(--primary); background-color: var(--white); }
-
-        .btn { padding: 14px 22px; border: none; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; width: 100%; }
-        .btn-primary { background-color: var(--primary); color: var(--white); }
-        .btn-danger { background-color: var(--danger); color: var(--white); }
-
-        /* --- PRODUCT GRID --- */
-        .product-card { border: 1px solid var(--border); padding: 16px; }
-        .product-img-holder { width: 100%; height: 240px; border-radius: 14px; overflow: hidden; margin-bottom: 16px; position: relative; background-color: #f3f4f6; }
-        .product-img-holder img { width: 100%; height: 100%; object-fit: cover; }
-        .product-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .product-title { font-size: 18px; font-weight: 700; color: var(--primary-dark); }
-        .product-price { background-color: var(--accent-bg); color: var(--primary); padding: 6px 16px; border-radius: 30px; font-weight: 800; }
-        .action-bar { display: flex; gap: 10px; margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }
-
-        .image-upload-preview { width: 100%; height: 160px; border: 2.5px dashed var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 700; cursor: pointer; background-size: cover; background-position: center; }
-
-        /* --- REALTIME CHAT ROOM WINDOW --- */
-        .chat-container { display: flex; background: var(--white); border-radius: 20px; height: 560px; border: 1px solid var(--border); overflow: hidden; }
-        .chat-sidebar { width: 35%; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: #fafbfa; }
-        .sidebar-header { padding: 18px; font-weight: 700; border-bottom: 1px solid var(--border); color: var(--primary-dark); }
-        .chat-list { flex: 1; overflow-y: auto; }
-        .chat-item { padding: 16px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid #f3f4f6; transition: background 0.2s; }
-        .chat-item:hover, .chat-item.active { background-color: var(--accent-bg); }
-        .chat-avatar { width: 40px; height: 40px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-weight: 700; }
-        .chat-item-info { flex: 1; overflow: hidden; }
-        .chat-item-name { font-weight: 700; font-size: 14px; }
-        .chat-item-preview { font-size: 12px; color: var(--text-muted); text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
-        
-        .chat-window { width: 65%; display: flex; flex-direction: column; background: var(--white); }
-        .window-header { padding: 15px 18px; border-bottom: 1px solid var(--border); font-weight: 700; display: flex; align-items: center; justify-content: space-between; background: #fafbfa; }
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #fcfdfc; }
-        .msg { max-width: 75%; padding: 12px 16px; border-radius: 16px; font-size: 14px; }
-        .msg.sent { background-color: var(--primary); color: var(--white); align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg.received { background-color: #f3f4f6; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
-        .chat-input-area input { flex: 1; border-radius: 25px; padding: 14px 20px; }
-        .btn-send { width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: var(--white); min-height: 50px; padding: 0; }
-
-        @media (max-width: 767px) {
-            .desktop-header { display: none; }
-            .chat-container { height: calc(100vh - 170px); }
-            .chat-sidebar { width: 100%; }
-            .chat-window { width: 100%; display: none; }
-            .chat-container.active-conversation .chat-sidebar { display: none; }
-            .chat-container.active-conversation .chat-window { display: flex; }
+        /* Global Premium Loading Screen */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff; z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            gap: 15px; opacity: 1; transition: opacity 0.3s ease;
         }
+        .spinner {
+            width: 45px; height: 45px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text { font-size: 14px; color: #666; font-weight: 500; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Navigation Bar */
+        .navbar { display: flex; justify-content: space-around; background: #ffffff; position: fixed; bottom: 0; width: 100%; padding: 10px 0; z-index: 999; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top: 1px solid #eee; }
+        .nav-item { color: #666; text-decoration: none; font-size: 12px; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: color 0.2s; width: 33.33%; }
+        .nav-item i { font-size: 20px; }
+        .nav-item.active-nav { color: var(--primary-color); font-weight: bold; }
+
+        /* Panels Container */
+        .view-panel { padding: 15px; display: none; max-width: 600px; margin: 0 auto; }
+        .active-panel { display: block; }
+
+        /* Auth View Styling */
+        .auth-container { max-width: 400px; margin: 50px auto; padding: 25px; background: white; border-radius: var(--border-radius); box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; }
+        .auth-container h2 { color: var(--primary-color); margin-bottom: 20px; font-weight: 600; }
+        .auth-input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; outline: none; font-size: 14px; transition: border 0.2s; }
+        .auth-input:focus { border-color: var(--primary-color); }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: #235e26; }
+        .btn-google { background: #ffffff; color: #444; border: 1px solid #ddd; margin-top: 15px; }
+        .btn-google:hover { background: #f9f9f9; }
+        .auth-toggle { margin-top: 18px; font-size: 13px; color: #666; cursor: pointer; text-decoration: underline; }
+
+        /* Marketplace Post Cards */
+        .header-title { padding: 15px; text-align: center; background: white; border-bottom: 1px solid #eee; margin-bottom: 15px; color: var(--primary-color); font-size: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .posts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .post-card { background: white; border-radius: var(--border-radius); overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; border: 1px solid #eaeaea; }
+        .post-img { width: 100%; height: 140px; object-fit: cover; background: #f0f0f0; }
+        .post-details { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .post-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #333; }
+        .post-price { color: var(--primary-color); font-weight: bold; font-size: 14px; }
+        .post-seller { font-size: 12px; color: #1a73e8; cursor: pointer; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+        .post-seller:hover { text-decoration: underline; }
+        .report-link { align-self: flex-start; background: none; border: none; color: #d32f2f; font-size: 11px; margin-top: 8px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
+        /* Profile & Settings Styling */
+        .profile-card { background: white; padding: 25px; border-radius: var(--border-radius); text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #eee; }
+        .avatar-lg { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid var(--primary-color); }
+        
+        /* Chat Room Styling */
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 140px); background: white; border-radius: var(--border-radius); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .chat-header { display: flex; align-items: center; padding: 12px 15px; background: var(--primary-color); color: white; }
+        .chat-header h3 { font-size: 16px; font-weight: 500; }
+        .back-btn { background: none; border: none; color: white; font-size: 18px; margin-right: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; }
+        .back-btn:hover { background: rgba(255,255,255,0.1); }
+        .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; background: #f4f6f8; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 14px; word-break: break-word; line-height: 1.4; }
+        .msg-me { background: #e3f2fd; color: #1565c0; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg-them { background: white; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .chat-input-area { display: flex; padding: 12px; border-top: 1px solid #eee; background: #ffffff; align-items: center; }
+        .chat-input { flex-grow: 1; padding: 12px 16px; border: 1px solid #ddd; border-radius: 24px; outline: none; font-size: 14px; transition: border-color 0.2s; }
+        .chat-input:focus { border-color: var(--primary-color); }
+        .chat-send-btn { background: var(--primary-color); color: white; border: none; width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: background 0.2s; }
+        .chat-send-btn:hover { background: #235e26; }
+
+        /* Modals & Popups */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(2px); }
+        .modal-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; width: 90%; max-width: 400px; border-radius: var(--border-radius); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .modal-box h3 { display: flex; align-items: center; gap: 8px; font-size: 18px; margin-bottom: 8px; }
+        .report-textarea { width: 100%; padding: 10px; margin-top: 12px; border-radius: 6px; border: 1px solid #ddd; resize: none; font-size: 14px; outline: none; }
+        .report-textarea:focus { border-color: var(--danger-color); }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="auth-card">
-            <div class="auth-logo"><i class="fa-solid fa-shield-halved"></i> Green Market</div>
-            <div class="auth-subtitle">စုံလင်ပြီး စိတ်ချရဆုံးသော C2C Escrow ကွန်ရက်</div>
-            
-            <div class="auth-tabs">
-                <button class="auth-tab active" id="tab-login-mode" onclick="toggleAuthMode('login')">Login</button>
-                <button class="auth-tab" id="tab-signup-mode" onclick="toggleAuthMode('signup')">Sign Up</button>
-            </div>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading GreenMarket...</div>
+    </div>
 
-            <div class="form-group">
-                <label>အီးမေးလ် (Email)</label>
-                <input type="email" id="auth-email" placeholder="example@email.com">
-            </div>
-            <div class="form-group">
-                <label>လျှို့ဝှက်နံပါတ် (Password)</label>
-                <input type="password" id="auth-password" placeholder="••••••••">
-            </div>
-
-            <button class="btn btn-primary" id="emailAuthBtn" style="margin-top:10px;"><i class="fa-solid fa-key"></i> <span id="auth-btn-text">အကောင့်ထဲဝင်မည်</span></button>
-            
-            <div class="auth-divider">သို့မဟုတ်</div>
-            
-            <button class="btn google-btn" id="googleAuthBtn"><i class="fa-brands fa-google"></i> Google ဖြင့် တိုက်ရိုက်ဝင်မည်</button>
+    <div id="auth-panel" class="view-panel">
+        <div class="auth-container">
+            <h2 id="auth-title">Marketplace သို့ ဝင်ရန်</h2>
+            <input type="email" id="auth-email" class="auth-input" placeholder="Email လိပ်စာ ရိုက်ပါ">
+            <input type="password" id="auth-password" class="auth-input" placeholder="Password ရိုက်ပါ">
+            <button id="auth-main-btn" class="btn btn-primary">လော့ဂ်အင်ဝင်မည်</button>
+            <button id="auth-google-btn" class="btn btn-google">
+                <img src="https://fonts.gstatic.com/navya/images/logos/google/1x/google_24dp.png" alt="Google" style="width:18px; height:18px;"> Google ဖြင့် တိုက်ရိုက်ဝင်မည်
+            </button>
+            <p id="auth-toggle-mode" class="auth-toggle">အကောင့်အသစ်ဆောက်ရန် နှိပ်ပါ</p>
         </div>
     </div>
 
-    <div id="app-content">
-        <div id="toast-container"></div>
-
-        <header class="desktop-header">
-            <div class="logo"><i class="fa-solid fa-shield-halved"></i> Green Market</div>
-            <nav class="desktop-nav">
-                <button class="nav-btn active tab-btn-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i> Home</button>
-                <button class="nav-btn tab-btn-create" onclick="switchTab('create')"><i class="fa-solid fa-circle-plus"></i> တင်ရန်</button>
-                <button class="nav-btn tab-btn-chat" onclick="switchTab('chat')"><i class="fa-solid fa-comments"></i> မက်ဆေ့ခ်ျ</button>
-                <button class="nav-btn tab-btn-profile" onclick="switchTab('profile')"><i class="fa-solid fa-user-gear"></i> Settings</button>
-            </nav>
-        </header>
-
-        <div class="mobile-bottom-nav">
-            <button class="mobile-nav-btn active tab-btn-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i>Home</button>
-            <button class="mobile-nav-btn tab-btn-create" onclick="switchTab('create')"><i class="fa-solid fa-circle-plus"></i>တင်ရန်</button>
-            <button class="mobile-nav-btn tab-btn-chat" onclick="switchTab('chat')"><i class="fa-solid fa-comments"></i>မက်ဆေ့ခ်ျ</button>
-            <button class="mobile-nav-btn tab-btn-profile" onclick="switchTab('profile')"><i class="fa-solid fa-user-gear"></i>Settings</button>
-        </div>
-
-        <div class="main-container">
-            <div id="tab-home" class="tab-content active">
-                <div id="feed-container"></div>
+    <div id="marketplace-panel" class="view-panel">
+        <h2 class="header-title"><i class="fa-solid fa-basket-shopping"></i> GreenMarket</h2>
+        <button id="demo-post-btn" style="width:100%; padding:10px; margin-bottom:15px; background:#e8f5e9; color:green; border:1px dashed green; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <i class="fa-solid fa-circle-plus"></i> ရောင်းကုန်ပစ္စည်းအစမ်း ဖန်တီးရန် (Demo Post)
+        </button>
+        <div id="all-posts-container" class="posts-grid">
             </div>
+    </div>
 
-            <div id="tab-create" class="tab-content">
-                <div class="card">
-                    <h2><i class="fa-solid fa-square-plus"></i> ပစ္စည်းအသစ်တင်ရန်</h2>
-                    <div class="form-group">
-                        <label>ပစ္စည်းအမည်</label>
-                        <input type="text" id="p-title" placeholder="Product Name">
-                    </div>
-                    <div class="form-group">
-                        <label>စျေးနှုန်း ($)</label>
-                        <input type="number" id="p-price" placeholder="Price">
-                    </div>
-                    <div class="form-group">
-                        <label>ပစ္စည်းပုံတင်ရန်</label>
-                        <input type="file" id="p-image-file" accept="image/*" style="display:none">
-                        <div class="image-upload-preview" id="imgUploadBtn">
-                            <div id="previewText"><i class="fa-solid fa-image"></i> ပုံရွေးချယ်ရန်</div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>အသေးစိတ်အချက်အလက်</label>
-                        <textarea id="p-desc" rows="3" placeholder="Description..."></textarea>
-                    </div>
-                    <button class="btn btn-primary" id="publishBtn">Cloud ပေါ်သို့ တင်မည်</button>
-                </div>
+    <div id="chat-panel" class="view-panel">
+        <div class="chat-container">
+            <div class="chat-header">
+                <button id="back-to-market-btn" class="back-btn"><i class="fa-solid fa-arrow-left"></i></button>
+                <h3 id="chat-partner-name">စကားပြောခန်း</h3>
             </div>
-
-            <div id="tab-chat" class="tab-content">
-                <div class="chat-container" id="chatMainBox">
-                    <div class="chat-sidebar">
-                        <div class="sidebar-header"><i class="fa-solid fa-users"></i> အွန်လိုင်းအသုံးပြုသူများ</div>
-                        <div class="chat-list" id="chatListContainer"></div>
-                    </div>
-                    <div class="chat-window">
-                        <div class="window-header">
-                            <button class="back-btn" onclick="document.getElementById('chatMainBox').classList.remove('active-conversation')" style="background:none; border:none; color:var(--primary); font-weight:bold; display:none;"><i class="fa-solid fa-arrow-left"></i> နောက်သို့</button>
-                            <div id="chatWindowHeader">စကားပြောခန်း</div>
-                            <div style="font-size:11px; background:#e0f2fe; color:var(--verified-blue); padding:4px 10px; border-radius:20px;"><i class="fa-solid fa-lock"></i> Escrow Ready</div>
-                        </div>
-                        <div class="chat-messages" id="chatMessagesContainer"></div>
-                        <div class="chat-input-area">
-                            <input type="text" id="chatInputField" placeholder="စာရိုက်ပါ...">
-                            <button class="btn btn-send" id="sendMsgBtn"><i class="fa-solid fa-paper-plane"></i></button>
-                        </div>
-                    </div>
+            <div id="chat-messages-container" class="chat-messages">
                 </div>
-            </div>
-
-            <div id="tab-profile" class="tab-content">
-                <div class="card" style="text-align: center;">
-                    <h2><i class="fa-solid fa-user-shield"></i> အကောင့်အချက်အလက်</h2>
-                    <div class="form-group"><label>အမည်</label><input type="text" id="user-name" readonly></div>
-                    <div class="form-group"><label>အီးမေးလ်</label><input type="text" id="user-email" readonly></div>
-                    <button class="btn btn-danger" id="logoutBtn" style="margin-top:20px;"><i class="fa-solid fa-right-from-bracket"></i> အကောင့်မှ ထွက်မည်</button>
-                </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-text-input" class="chat-input" placeholder="စာရိုက်ပါ...">
+                <button id="chat-send-btn" class="chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
+
+    <div id="settings-panel" class="view-panel">
+        <h2 class="header-title"><i class="fa-solid fa-gears"></i> Profile Settings</h2>
+        <div class="profile-card">
+            <img id="my-avatar-preview" src="https://via.placeholder.com/150" class="avatar-lg" alt="Profile Image">
+            <div style="margin-bottom: 15px; text-align: left;">
+                <label style="font-weight: 600; font-size: 13px; color: #555;">အမည်ပြင်ရန်:</label>
+                <input type="text" id="settings-username" class="auth-input" placeholder="အမည်သစ်...">
+            </div>
+            <div style="margin-bottom: 20px; text-align: left;">
+                <label style="font-weight: 600; font-size: 13px; color: #555;">ဓါတ်ပုံပြောင်းရန်:</label>
+                <input type="file" id="settings-file-picker" accept="image/*" style="margin-top: 6px; width: 100%; font-size: 13px;">
+            </div>
+            <button id="save-profile-btn" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> အချက်အလက်များ သိမ်းဆည်းမည် (Save)</button>
+            <button id="logout-btn" class="btn" style="background:#f5f5f5; color: var(--danger-color); border:1px solid #ddd; margin-top:20px;"><i class="fa-solid fa-right-from-bracket"></i> ထွက်ရန် (Logout)</button>
+        </div>
+    </div>
+
+    <div id="user-wall-panel" class="view-panel">
+        <button id="back-from-wall-btn" class="btn" style="background:#ddd; width:auto; padding:8px 16px; margin-bottom:15px; font-size:13px; font-weight:normal; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-arrow-left"></i> ဈေးဆိုင်သို့ ပြန်သွားရန်</button>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 15px; border-radius: var(--border-radius); border: 1px solid #eee; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img id="wall-user-avatar" src="https://via.placeholder.com/150" style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd;">
+                <div>
+                    <h3 id="wall-user-name" style="font-size: 16px; font-weight: 600;">ရောင်းသူအမည်</h3>
+                    <p style="font-size: 12px; color: #888;">Active Seller</p>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <button id="wall-chat-btn" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px; width: auto; margin-top: 0;"><i class="fa-solid fa-comments"></i> စကားပြောမည်</button>
+                <button id="wall-report-btn" class="btn" style="background: var(--danger-color); color: white; padding: 6px 12px; font-size: 12px; width: auto; margin-top: 0;"><i class="fa-solid fa-flag"></i> တိုင်ကြားရန်</button>
+            </div>
+        </div>
+        <h4 style="margin: 20px 0 10px 0; font-size: 15px; font-weight: 600; color: #444;"><i class="fa-solid fa-box-open"></i> သူရောင်းချနေသော ကုန်ပစ္စည်းများ</h4>
+        <div id="wall-user-posts-container" class="posts-grid">
+            </div>
+    </div>
+
+    <div id="report-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="color: var(--danger-color);"><i class="fa-solid fa-triangle-exclamation"></i> Report ပြုလုပ်ခြင်း</h3>
+            <p style="font-size: 13px; color: #666; margin-top: 5px;">မသင့်လျော်သော လုပ်ဆောင်ချက်များအား အသေးစိတ် ရေးသားတိုင်ကြားနိုင်ပါသည်။</p>
+            <input type="hidden" id="report-target-id">
+            <input type="hidden" id="report-type">
+            <textarea id="report-reason" class="report-textarea" rows="4" placeholder="အကြောင်းအရင်းကို ဤနေရာတွင် ရေးပေးပါ..."></textarea>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                <button id="close-report-btn" style="padding: 8px 16px; background: #eee; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">ပယ်ဖျက်မည်</button>
+                <button id="submit-report-btn" style="padding: 8px 16px; background: var(--danger-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">တိုင်ကြားမည်</button>
+            </div>
+        </div>
+    </div>
+
+    <nav id="app-nav" class="navbar" style="display: none;">
+        <button class="nav-item active-nav" id="nav-market"><i class="fa-solid fa-store"></i>ဈေးဆိုင်</button>
+        <button class="nav-item" id="nav-chat"><i class="fa-solid fa-comments"></i>စကားပြော</button>
+        <button class="nav-item" id="nav-settings"><i class="fa-solid fa-user-gear"></i>ပြင်ဆင်ချက်</button>
+    </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, addDoc, collection, query, where, getDocs, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDMuvAQcAfeSDEtWaFdMA8QHBBkGppIy6U",
@@ -265,284 +219,318 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const auth = getAuth(app);
+        const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
         let currentAuthMode = "login";
-        let localUser = null;
-        let globalPosts = [];
-        let globalChats = [];
-        let activeUsersInNetwork = [];
-        let activeChatUser = null;
-        let uploadedImageBase64 = "";
+        let currentActiveChatPartner = null;
 
-        // --- AUTHENTICATION LIFECYCLE MONITOR ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                localUser = user;
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
+        function showLoader() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-overlay').style.opacity = '1';
+        }
+        function hideLoader() {
+            document.getElementById('loading-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, 300);
+        }
 
-                const sanitizedName = user.displayName || user.email.split('@')[0];
-                document.getElementById('user-name').value = sanitizedName;
-                document.getElementById('user-email').value = user.email;
+        function switchPanel(panelId, navId) {
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active-panel'));
+            document.getElementById(panelId).classList.add('active-panel');
+            
+            if(navId) {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+                document.getElementById(navId).classList.add('active-nav');
+            }
+        }
 
-                // Sync user into real database node
-                await setDoc(doc(db, "users", user.uid), {
-                    uid: user.uid,
-                    name: sanitizedName,
-                    email: user.email,
-                    timestamp: Date.now()
-                }, { merge: true });
+        // Navigation Tab Event Listeners
+        document.getElementById('nav-market').addEventListener('click', () => switchPanel('marketplace-panel', 'nav-market'));
+        document.getElementById('nav-chat').addEventListener('click', () => switchPanel('chat-panel', 'nav-chat'));
+        document.getElementById('nav-settings').addEventListener('click', () => switchPanel('settings-panel', 'nav-settings'));
+        
+        // FIXED: Back Buttons Event Listeners အပြည့်အစုံ ချိတ်ဆက်မှု
+        document.getElementById('back-to-market-btn').addEventListener('click', () => switchPanel('marketplace-panel', 'nav-market'));
+        document.getElementById('back-from-wall-btn').addEventListener('click', () => switchPanel('marketplace-panel', 'nav-market'));
 
-                initRealtimeSync();
+        // AUTHENTICATION MODE TOGGLE
+        const toggleBtn = document.getElementById('auth-toggle-mode');
+        toggleBtn.addEventListener('click', () => {
+            if(currentAuthMode === "login") {
+                currentAuthMode = "signup";
+                document.getElementById('auth-title').innerText = "အကောင့်သစ်ဆောက်ရန်";
+                document.getElementById('auth-main-btn').innerText = "ဆောက်လုပ်မည်";
+                toggleBtn.innerText = "အကောင့်ရှိပြီးသားဖြစ်ပါက လော့ဂ်အင်ဝင်ရန်";
             } else {
-                localUser = null;
-                document.getElementById('auth-screen').style.display = 'flex';
-                document.getElementById('app-content').style.display = 'none';
+                currentAuthMode = "login";
+                document.getElementById('auth-title').innerText = "Marketplace သို့ ဝင်ရန်";
+                document.getElementById('auth-main-btn').innerText = "လော့ဂ်အင်ဝင်မည်";
+                toggleBtn.innerText = "အကောင့်အသစ်ဆောက်ရန် နှိပ်ပါ";
             }
         });
 
-        // --- AUTH ACTION ROUTERS ---
-        async function handleEmailAuth() {
+        // EMAIL/PASSWORD AUTH
+        document.getElementById('auth-main-btn').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value.trim();
             const pass = document.getElementById('auth-password').value;
+            if(!email || !pass) return alert("Email နှင့် Password ဖြည့်ပါဗျာ။");
 
-            if(!email || !pass) { showToast("ဖြည့်စွက်ရန် ကျန်ရှိနေပါသည်ဗျာ။", "error"); return; }
-
+            showLoader();
             try {
                 if(currentAuthMode === "login") {
                     await signInWithEmailAndPassword(auth, email, pass);
-                    showToast("ဝင်ရောက်ခြင်း အောင်မြင်ပါသည်။");
                 } else {
-                    await createUserWithEmailAndPassword(auth, email, pass);
-                    showToast("အကောင့်အသစ် ဆောက်လုပ်ပြီးပါပြီ။");
+                    const credential = await createUserWithEmailAndPassword(auth, email, pass);
+                    await setDoc(doc(db, "users", credential.user.uid), {
+                        displayName: email.split('@')[0],
+                        photoURL: "https://via.placeholder.com/150",
+                        uid: credential.user.uid
+                    });
                 }
             } catch(err) {
-                showToast(err.message.replace("Firebase:", ""), "error");
+                alert("Auth Error: " + err.message);
+                hideLoader();
             }
-        }
+        });
 
-        async function handleGoogleAuth() {
+        // GOOGLE SIGNIN
+        document.getElementById('auth-google-btn').addEventListener('click', async () => {
+            showLoader();
             try {
-                await signInWithPopup(auth, googleProvider);
-                showToast("Google ဖြင့် အောင်မြင်စွာ ဝင်ရောက်ပြီးပါပြီ။");
+                const result = await signInWithPopup(auth, googleProvider);
+                await setDoc(doc(db, "users", result.user.uid), {
+                    displayName: result.user.displayName || "အမည်မသိ",
+                    photoURL: result.user.photoURL || "https://via.placeholder.com/150",
+                    uid: result.user.uid
+                }, { merge: true });
             } catch(err) {
-                showToast(err.message, "error");
+                alert("Google Signin Error: " + err.message);
+                hideLoader();
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            showLoader();
+            signOut(auth);
+        });
+
+        // 🔄 FIXED AUTH STATE LISTENER (LOADING မငြိတော့ပါ)
+        onAuthStateChanged(auth, async (user) => {
+            try {
+                if(user) {
+                    document.getElementById('app-nav').style.display = 'flex';
+                    switchPanel('marketplace-panel', 'nav-market');
+                    await loadUserProfile(user.uid);
+                    listenToMarketplacePosts();
+                } else {
+                    document.getElementById('app-nav').style.display = 'none';
+                    switchPanel('auth-panel');
+                }
+            } catch (err) {
+                console.error("Auth initialization error: ", err);
+            } finally {
+                hideLoader(); // ဘယ်လိုအခြေအနေမျိုးပဲဖြစ်ဖြစ် Loading Screen ကို အပြီးပိတ်ပေးမည်
+            }
+        });
+
+        // PROFILE SYSTEM
+        async function loadUserProfile(uid) {
+            const docSnap = await getDoc(doc(db, "users", uid));
+            if(docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('settings-username').value = data.displayName || "";
+                document.getElementById('my-avatar-preview').src = data.photoURL || "https://via.placeholder.com/150";
             }
         }
 
-        // --- ENGINE REALTIME SYNC (FIRESTORE) ---
-        function initRealtimeSync() {
-            // 1. Synchronize All Active Cloud Users
-            onSnapshot(collection(db, "users"), (snapshot) => {
-                activeUsersInNetwork = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if(data.uid !== localUser.uid) activeUsersInNetwork.push(data);
+        document.getElementById('save-profile-btn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if(!user) return;
+
+            const newName = document.getElementById('settings-username').value.trim();
+            const fileInput = document.getElementById('settings-file-picker');
+            let base64Image = null;
+
+            if(fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                base64Image = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
                 });
-                renderChatList();
-            });
-
-            // 2. Synchronize Feed Posts
-            onSnapshot(query(collection(db, "posts"), orderBy("timestamp", "desc")), (snapshot) => {
-                globalPosts = [];
-                snapshot.forEach(doc => globalPosts.push({ id: doc.id, ...doc.data() }));
-                displayFeed();
-            });
-
-            // 3. Synchronize Network Wide Core Chat
-            onSnapshot(query(collection(db, "chats"), orderBy("timestamp", "asc")), (snapshot) => {
-                globalChats = [];
-                snapshot.forEach(doc => globalChats.push(doc.data()));
-                renderChatMessages();
-            });
-        }
-
-        // --- CHAT DISPATCH SYSTEM (FIXED BUG) ---
-        async function sendChatMessage() {
-            const input = document.getElementById('chatInputField');
-            const text = input.value.trim();
-            if(!text || !activeChatUser) return;
-
-            const myName = localUser.displayName || localUser.email.split('@')[0];
-            const computedRoomId = [myName, activeChatUser].sort().join("##");
-
-            await addDoc(collection(db, "chats"), {
-                room: computedRoomId,
-                sender: myName,
-                text: text,
-                timestamp: Date.now()
-            });
-
-            input.value = '';
-        }
-
-        function renderChatList() {
-            const container = document.getElementById('chatListContainer');
-            container.innerHTML = '';
-
-            if(activeUsersInNetwork.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:30px; font-size:13px; color:var(--text-muted);">အွန်လိုင်းပေါ်တွင် အခြားအသုံးပြုသူ မရှိသေးပါဗျာ။</div>`;
-                return;
             }
 
-            activeUsersInNetwork.forEach(user => {
-                const isActive = (user.name === activeChatUser) ? 'active' : '';
-                container.innerHTML += `
-                    <div class="chat-item ${isActive}" onclick="selectChatUser('${user.name}')">
-                        <div class="chat-avatar">${user.name.charAt(0).toUpperCase()}</div>
-                        <div class="chat-item-info">
-                            <div class="chat-item-name">${user.name}</div>
-                            <div class="chat-item-preview">နှိပ်၍ စကားပြောခန်းသို့ဝင်ပါ...</div>
+            showLoader();
+            try {
+                const userRef = doc(db, "users", user.uid);
+                const updates = {};
+                if(newName) updates.displayName = newName;
+                if(base64Image) {
+                    updates.photoURL = base64Image;
+                    document.getElementById('my-avatar-preview').src = base64Image;
+                }
+                await updateDoc(userRef, updates);
+                alert("Profile ပြင်ဆင်ချက်များအား သိမ်းဆည်းပြီးပါပြီဗျာ!");
+            } catch(err) {
+                alert("Error saving profile: " + err.message);
+            } finally {
+                hideLoader();
+            }
+        });
+
+        // MARKETPLACE SYSTEM
+        function listenToMarketplacePosts() {
+            onSnapshot(collection(db, "posts"), (snapshot) => {
+                const container = document.getElementById('all-posts-container');
+                container.innerHTML = "";
+                if(snapshot.empty) {
+                    container.innerHTML = "<p style='grid-column: span 2; text-align:center; padding: 20px; color:#888;'>ရောင်းချမည့်ပစ္စည်းများ မရှိသေးပါဗျာ။</p>";
+                }
+                snapshot.forEach((doc) => {
+                    const post = doc.data();
+                    container.innerHTML += `
+                        <div class="post-card">
+                            <img class="post-img" src="${post.image || 'https://via.placeholder.com/150'}">
+                            <div class="post-details">
+                                <div class="post-title">${post.title}</div>
+                                <div class="post-price">${post.price} MMK</div>
+                                <div class="post-seller" onclick="viewUserWall('${post.uid}')"><i class="fa-solid fa-user-circle"></i> ${post.sellerName || 'ရောင်းသူ'}</div>
+                                <button class="report-link" onclick="openReportModal('${doc.id}', 'post')"><i class="fa-solid fa-flag"></i> Report Post</button>
+                            </div>
                         </div>
-                    </div>`;
+                    `;
+                });
             });
         }
 
-        function renderChatMessages() {
-            const container = document.getElementById('chatMessagesContainer');
-            container.innerHTML = '';
-            if(!activeChatUser) { container.innerHTML = `<div style="text-align:center; padding-top:40px; color:var(--text-muted);">စကားပြောရန် အကောင့်တစ်ခု ရွေးချယ်ပါဗျာ။</div>`; return; }
+        document.getElementById('demo-post-btn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if(!user) return;
+            showLoader();
+            try {
+                const userSnap = await getDoc(doc(db, "users", user.uid));
+                const uName = userSnap.exists() ? userSnap.data().displayName : "လူစိမ်း";
 
-            const myName = localUser.displayName || localUser.email.split('@')[0];
-            const currentRoomId = [myName, activeChatUser].sort().join("##");
+                await addDoc(collection(db, "posts"), {
+                    title: "Premium ကုန်ပစ္စည်း " + Math.floor(Math.random() * 100),
+                    price: "၃၅,၀၀၀",
+                    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+                    uid: user.uid,
+                    sellerName: uName,
+                    timestamp: new Date()
+                });
+            } catch(e) {
+                alert(e.message);
+            } finally {
+                hideLoader();
+            }
+        });
 
-            const filteredRoomMsgs = globalChats.filter(m => m.room === currentRoomId);
+        // USER WALL & PROFILE VIEW SYSTEM
+        window.viewUserWall = async function(targetUid) {
+            showLoader();
+            switchPanel('user-wall-panel');
+            document.getElementById('wall-report-btn').setAttribute('onclick', `openReportModal('${targetUid}', 'user')`);
+            
+            // FIXED: ရောင်းသူနှင့် စကားပြောရန် ခလုတ်အား Data ချိတ်ဆက်ပေးခြင်း
+            document.getElementById('wall-chat-btn').setAttribute('onclick', `openDirectChat('${targetUid}')`);
 
-            filteredRoomMsgs.forEach(m => {
-                const side = (m.sender === myName) ? 'sent' : 'received';
-                container.innerHTML += `<div class="msg ${side}">${m.text}</div>`;
-            });
-            container.scrollTop = container.scrollHeight;
-        }
+            try {
+                const userSnap = await getDoc(doc(db, "users", targetUid));
+                if(userSnap.exists()) {
+                    const uData = userSnap.data();
+                    document.getElementById('wall-user-name').innerText = uData.displayName || "အမည်မသိ";
+                    document.getElementById('wall-user-avatar').src = uData.photoURL || "https://via.placeholder.com/150";
+                }
 
-        // --- CORE INTERFACE LOGIC ---
-        function displayFeed() {
-            const feed = document.getElementById('feed-container');
-            feed.innerHTML = '';
+                const q = query(collection(db, "posts"), where("uid", "==", targetUid));
+                const querySnapshot = await getDocs(q);
+                const wallContainer = document.getElementById('wall-user-posts-container');
+                wallContainer.innerHTML = "";
 
-            if(globalPosts.length === 0) { feed.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:40px 0;">ရောင်းချမည့် ပစ္စည်းများ မရှိသေးပါဗျာ။</p>`; return; }
+                if(querySnapshot.empty) {
+                    wallContainer.innerHTML = "<p style='grid-column: span 2; text-align:center; padding: 20px; color:#888;'>ရောင်းကုန်မရှိသေးပါဗျာ။</p>";
+                    return;
+                }
 
-            globalPosts.forEach(post => {
-                feed.innerHTML += `
-                    <div class="card product-card">
-                        <div class="product-img-holder"><img src="${post.image}"></div>
-                        <div class="product-header">
-                            <div class="product-title">${post.title}</div>
-                            <div class="product-price">$${post.price}</div>
+                querySnapshot.forEach((doc) => {
+                    const post = doc.data();
+                    wallContainer.innerHTML += `
+                        <div class="post-card">
+                            <img class="post-img" src="${post.image || 'https://via.placeholder.com/150'}">
+                            <div class="post-details">
+                                <div class="post-title">${post.title}</div>
+                                <div class="post-price">${post.price} MMK</div>
+                            </div>
                         </div>
-                        <p style="font-size:13px; color:var(--text-muted); margin-top:4px;"><i class="fa-solid fa-user"></i> Seller: ${post.seller}</p>
-                        <p style="font-size:14px; margin-top:10px; color:#4b5563;">${post.desc}</p>
-                        <div class="action-bar">
-                            <button class="btn btn-primary" onclick="openDirectChat('${post.seller}')"><i class="fa-solid fa-comments"></i> Chat Secure</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        // --- ADVANCED QUALITY COMPRESSION ENGINES ---
-        function processImageCompression(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const sizeLimit = 500;
-                    let w = img.width, h = img.height;
-
-                    if (w > h && w > sizeLimit) { h *= sizeLimit / w; w = sizeLimit; }
-                    else if (h > sizeLimit) { w *= sizeLimit / h; h = sizeLimit; }
-
-                    canvas.width = w; canvas.height = h;
-                    ctx.drawImage(img, 0, 0, w, h);
-                    uploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.5);
-
-                    document.getElementById('imgUploadBtn').style.backgroundImage = `url(${uploadedImageBase64})`;
-                    document.getElementById('previewText').style.display = 'none';
-                };
-                img.src = evt.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function createCloudPost() {
-            const title = document.getElementById('p-title').value.trim();
-            const price = document.getElementById('p-price').value.trim();
-            const desc = document.getElementById('p-desc').value.trim();
-
-            if(!title || !price || !uploadedImageBase64) { showToast("အချက်အလက် ပြည့်စုံစွာ ဖြည့်သွင်းပါဗျာ။", "error"); return; }
-
-            await addDoc(collection(db, "posts"), {
-                title, price, desc, image: uploadedImageBase64,
-                seller: localUser.displayName || localUser.email.split('@')[0],
-                timestamp: Date.now()
-            });
-
-            document.getElementById('p-title').value = '';
-            document.getElementById('p-price').value = '';
-            document.getElementById('p-desc').value = '';
-            document.getElementById('imgUploadBtn').style.backgroundImage = '';
-            document.getElementById('previewText').style.display = 'block';
-            uploadedImageBase64 = "";
-
-            showToast("ပစ္စည်းအား Cloud ပေါ်သို့ တင်ပြီးပါပြီ။");
-            switchTab('home');
-        }
-
-        // EXPOSE TO CORE COMPONENT SCOPE
-        window.switchTab = function(name) {
-            document.querySelectorAll('.tab-content').forEach(el => { el.classList.remove('active'); el.style.display='none'; });
-            document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(el => el.classList.remove('active'));
-            const target = document.getElementById(`tab-${name}`);
-            target.style.display = 'block'; setTimeout(() => target.classList.add('active'), 40);
-            document.querySelectorAll(`.tab-btn-${name}`).forEach(el => el.classList.add('active'));
+                    `;
+                });
+            } catch(err) {
+                alert("Error loading wall: " + err.message);
+            } finally {
+                hideLoader();
+            }
         };
 
-        window.toggleAuthMode = function(mode) {
-            currentAuthMode = mode;
-            document.getElementById('tab-login-mode').classList.toggle('active', mode === 'login');
-            document.getElementById('tab-signup-mode').classList.toggle('active', mode === 'signup');
-            document.getElementById('auth-btn-text').innerText = mode === 'login' ? 'အကောင့်ထဲဝင်မည်' : 'အကောင့်အသစ်ဆောက်မည်';
+        // FIXED: CHAT OPEN LOGIC FROM WALL
+        window.openDirectChat = async function(targetUid) {
+            showLoader();
+            try {
+                const userSnap = await getDoc(doc(db, "users", targetUid));
+                if(userSnap.exists()) {
+                    const uData = userSnap.data();
+                    document.getElementById('chat-partner-name').innerText = uData.displayName || "စကားပြောခန်း";
+                    currentActiveChatPartner = targetUid;
+                    switchPanel('chat-panel', 'nav-chat');
+                    // ဤနေရာတွင် စကားပြောစာတိုများကို လိုအပ်သလို Firestore Realtime Query ဆက်လက်ချိတ်ဆက်နိုင်ပါသည်
+                }
+            } catch(e) {
+                alert("Chat open failed: " + e.message);
+            } finally {
+                hideLoader();
+            }
         };
 
-        window.selectChatUser = function(username) {
-            activeChatUser = username;
-            document.getElementById('chatWindowHeader').innerText = username;
-            document.getElementById('chatMainBox').classList.add('active-conversation');
-            renderChatList();
-            renderChatMessages();
+        // REPORT SYSTEM
+        window.openReportModal = function(targetId, type) {
+            document.getElementById('report-target-id').value = targetId;
+            document.getElementById('report-type').value = type;
+            document.getElementById('report-reason').value = "";
+            document.getElementById('report-modal').style.display = 'block';
         };
 
-        window.openDirectChat = function(seller) {
-            if(seller === (localUser.displayName || localUser.email.split('@')[0])) { showToast("မိမိကိုယ်တိုင် တင်ထားသော ပစ္စည်းဖြစ်သည်ဗျာ။", "error"); return; }
-            window.switchTab('chat');
-            window.selectChatUser(seller);
-        };
+        document.getElementById('close-report-btn').addEventListener('click', () => {
+            document.getElementById('report-modal').style.display = 'none';
+        });
 
-        window.showToast = function(msg, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const box = document.createElement('div');
-            box.className = `toast-card ${type === 'error' ? 'toast-error' : ''}`;
-            box.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${msg}</span>`;
-            container.appendChild(box); setTimeout(() => box.classList.add('show'), 20);
-            setTimeout(() => { box.classList.remove('show'); setTimeout(() => box.remove(), 400); }, 3000);
-        };
+        document.getElementById('submit-report-btn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            const targetId = document.getElementById('report-target-id').value;
+            const type = document.getElementById('report-type').value;
+            const reason = document.getElementById('report-reason').value.trim();
 
-        // BIND INTERFACE EVENTS
-        document.getElementById('emailAuthBtn').addEventListener('click', handleEmailAuth);
-        document.getElementById('googleAuthBtn').addEventListener('click', handleGoogleAuth);
-        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-        document.getElementById('imgUploadBtn').addEventListener('click', () => document.getElementById('p-image-file').click());
-        document.getElementById('p-image-file').addEventListener('change', processImageCompression);
-        document.getElementById('publishBtn').addEventListener('click', createCloudPost);
-        document.getElementById('sendMsgBtn').addEventListener('click', sendChatMessage);
-        document.getElementById('chatInputField').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); });
+            if(!reason) return alert("တိုင်ကြားရသည့် အကြောင်းအရင်းကို ရေးပေးပါဗျာ။");
+
+            showLoader();
+            try {
+                await addDoc(collection(db, "reports"), {
+                    reporterUid: user ? user.uid : "Anonymous",
+                    targetId: targetId,
+                    type: type,
+                    reason: reason,
+                    timestamp: new Date()
+                });
+                alert("တိုင်ကြားမှု လက်ခံရရှိပါပြီ။ စိစစ်အရေးယူပါမည်။");
+                document.getElementById('report-modal').style.display = 'none';
+            } catch(err) {
+                alert("Report failed: " + err.message);
+            } finally {
+                hideLoader();
+            }
+        });
     </script>
 </body>
 </html>

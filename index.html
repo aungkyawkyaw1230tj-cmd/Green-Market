@@ -7,7 +7,6 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="GreenMarket">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -27,7 +26,6 @@
             --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* DARK MODE VARIABLES */
         body.dark-mode {
             --bg-body: #111827;
             --white: #1f2937;
@@ -35,7 +33,7 @@
             --text-muted: #9ca3af;
             --border: #374151;
             --accent-bg: #374151;
-            --primary-dark: #34d399; /* Lighter text for dark mode */
+            --primary-dark: #34d399;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -48,11 +46,12 @@
         .auth-tabs { display: flex; background: var(--bg-body); padding: 4px; border-radius: 12px; margin-bottom: 20px; }
         .auth-tab { flex: 1; padding: 10px; border: none; background: none; font-weight: 700; cursor: pointer; border-radius: 10px; color: var(--text-muted); }
         .auth-tab.active { background: var(--white); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .divider { margin: 15px 0; color: var(--text-muted); font-size: 14px; position: relative; }
 
         /* --- UI COMPONENTS --- */
         #app-content { display: none; }
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; max-width: 350px; width: calc(100% - 40px); pointer-events: none; }
-        .toast-card { background: var(--white); border-left: 5px solid var(--primary); padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: transform 0.4s var(--ease-premium); font-weight: 600; font-size: 14px; }
+        .toast-card { background: var(--white); border-left: 5px solid var(--primary); padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: transform 0.4s var(--ease-premium); font-weight: 600; font-size: 14px; pointer-events: auto; }
         .toast-card.show { transform: translateX(0); }
         .toast-error { border-left-color: var(--danger); color: var(--danger); }
 
@@ -83,6 +82,7 @@
         .btn-danger { background-color: var(--danger); color: #fff; }
         .btn-warning { background-color: var(--warning); color: #fff; }
         .btn-secondary { background-color: var(--accent-bg); color: var(--primary-dark); border: 1px solid var(--primary); }
+        .btn-google { background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); }
 
         /* --- PRODUCT & SEARCH UI --- */
         .search-bar-container { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -114,7 +114,7 @@
         .chat-list { flex: 1; overflow-y: auto; }
         .chat-item { padding: 16px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.2s; }
         .chat-item:hover, .chat-item.active { background-color: var(--accent-bg); }
-        .chat-avatar { width: 40px; height: 40px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #064e3b; font-weight: 700; }
+        .chat-avatar { width: 40px; height: 40px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #064e3b; font-weight: 700; flex-shrink: 0; }
         .chat-item-info { flex: 1; overflow: hidden; }
         .chat-item-name { font-weight: 700; font-size: 14px; }
         
@@ -123,31 +123,35 @@
         .back-btn { background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; font-size: 15px; display: none; }
         
         .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .msg { max-width: 75%; padding: 12px 16px; border-radius: 16px; font-size: 14px; word-break: break-word; }
+        .msg { max-width: 75%; padding: 12px 16px; border-radius: 16px; font-size: 14px; word-break: break-word; position: relative; display: flex; align-items: center; gap: 8px; }
         .msg.sent { background-color: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg.received { background-color: var(--bg-body); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+        .msg img { max-width: 150px; max-height: 150px; border-radius: 8px; display: block; object-fit: cover; cursor: pointer; }
+        .msg-delete-btn { font-size: 11px; opacity: 0.4; cursor: pointer; transition: 0.2s; color: var(--white); }
+        .msg-delete-btn:hover { opacity: 1; color: var(--danger); }
+        .msg.received .msg-delete-btn { display: none; } /* သူများဆီကစာကို ဖျက်ခွင့်မရှိစေရန် */
         
-        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--white); }
+        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--white); align-items: center; }
         .chat-input-area input { flex: 1; border-radius: 25px; padding: 14px 20px; }
-        .btn-send { width: 50px; height: 50px; border-radius: 50%; min-height: 50px; padding: 0; }
+        .btn-send, .btn-chat-img { width: 46px; height: 46px; border-radius: 50%; min-height: 46px; padding: 0; }
 
         /* --- MODAL SYSTEM --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 100000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--white); width: 100%; max-width: 400px; border-radius: 20px; padding: 24px; position: relative; text-align: center; }
+        .modal-content { background: var(--white); width: 100%; max-width: 420px; border-radius: 20px; padding: 24px; position: relative; text-align: center; max-height: 90vh; overflow-y: auto; }
         .modal-close { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 20px; color: var(--text-muted); background: none; border: none; }
+        
+        /* User Wall inside Modal */
+        #userWallPosts { max-height: 220px; overflow-y: auto; margin-top: 15px; padding: 5px; background: var(--bg-body); border-radius: 12px; }
 
-        /* MOBILE RESPONSIVE */
         @media (max-width: 767px) {
             .desktop-header { display: none; }
             .chat-container { height: calc(100vh - 170px); }
             .chat-sidebar { width: 100%; }
             .chat-window { width: 100%; display: none; }
-            
-            /* ACTIVE CHAT MOBILE VIEW */
             .chat-container.active-conversation .chat-sidebar { display: none; }
             .chat-container.active-conversation .chat-window { display: flex; }
-            .back-btn { display: inline-flex; align-items: center; gap: 5px; } /* SHOW BACK BTN ON MOBILE */
+            .back-btn { display: inline-flex; align-items: center; gap: 5px; } 
             .action-bar { flex-direction: column; }
         }
     </style>
@@ -166,7 +170,15 @@
 
             <div class="form-group"><input type="email" id="auth-email" placeholder="Email Address"></div>
             <div class="form-group"><input type="password" id="auth-password" placeholder="Password"></div>
-            <button class="btn btn-primary" id="emailAuthBtn" style="margin-top:10px;"><i class="fa-solid fa-key"></i> <span id="auth-btn-text">အကောင့်ထဲဝင်မည်</span></button>
+            
+            <button class="btn btn-primary" id="emailAuthBtn" style="margin-top:10px;">
+                <i class="fa-solid fa-key"></i> <span id="auth-btn-text">အကောင့်ထဲဝင်မည်</span>
+            </button>
+
+            <div class="divider">( သို့မဟုတ် )</div>
+            <button class="btn btn-google" id="googleAuthBtn">
+                <i class="fa-brands fa-google" style="color: #ea4335;"></i> Google ဖြင့် ဝင်မည်
+            </button>
         </div>
     </div>
 
@@ -247,6 +259,11 @@
                         </div>
                         <div class="chat-messages" id="chatMessagesContainer"></div>
                         <div class="chat-input-area">
+                            <input type="file" id="chat-image-input" accept="image/*" style="display:none">
+                            <button class="btn btn-secondary btn-chat-img" onclick="document.getElementById('chat-image-input').click()">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                            
                             <input type="text" id="chatInputField" placeholder="စာရိုက်ပါ...">
                             <button class="btn btn-primary btn-send" id="sendMsgBtn"><i class="fa-solid fa-paper-plane"></i></button>
                         </div>
@@ -267,11 +284,22 @@
                     <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i> Dark / Light Mode</button>
                     <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="showSavedPosts()"><i class="fa-solid fa-bookmark"></i> သိမ်းဆည်းထားသော (Saved Posts)</button>
                     <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="openModal('aboutModal')"><i class="fa-solid fa-circle-info"></i> About App</button>
-                    <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="openModal('adminModal')"><i class="fa-solid fa-headset"></i> Admin Contact</button>
+                    <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="openAdminChat()"><i class="fa-solid fa-headset"></i> Admin Contact (Chat)</button>
                     <button class="btn btn-danger" id="logoutBtn" style="margin-top:20px;"><i class="fa-solid fa-right-from-bracket"></i> အကောင့်မှ ထွက်မည်</button>
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="customConfirmModal">
+        <div class="modal-content" style="max-width:350px;">
+            <h3 id="confirmTitle" style="margin-bottom: 12px; color: var(--danger);">အတည်ပြုရန်</h3>
+            <p id="confirmMessage" style="color: var(--text-muted); margin-bottom: 24px; font-size:14px;"></p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" style="padding:10px;" onclick="closeModal('customConfirmModal')">မလုပ်တော့ပါ</button>
+                <button class="btn btn-danger" style="padding:10px;" id="confirmYesBtn">သေချာသည်</button>
+            </div>
         </div>
     </div>
 
@@ -280,8 +308,11 @@
             <button class="modal-close" onclick="closeModal('userProfileModal')"><i class="fa-solid fa-xmark"></i></button>
             <div style="font-size: 50px; color: var(--primary); margin-bottom:10px;"><i class="fa-solid fa-circle-user"></i></div>
             <h2 id="modalUserName" style="justify-content: center;">User Name</h2>
-            <p id="modalUserPhone" style="color:var(--text-muted); margin-bottom: 20px;">Phone / Bio here</p>
-            <button class="btn btn-primary" id="modalChatBtn"><i class="fa-solid fa-comments"></i> စကားပြောမည်</button>
+            <p id="modalUserPhone" style="color:var(--text-muted); margin-bottom: 10px;">Phone / Bio</p>
+            
+            <div id="userWallPosts"></div>
+            
+            <button class="btn btn-primary" id="modalChatBtn" style="margin-top:15px;"><i class="fa-solid fa-comments"></i> စကားပြောမည်</button>
         </div>
     </div>
 
@@ -293,20 +324,10 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="adminModal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('adminModal')"><i class="fa-solid fa-xmark"></i></button>
-            <h2 style="justify-content: center;"><i class="fa-solid fa-headset"></i> Contact Admin</h2>
-            <p style="color:var(--text-muted); line-height:1.6; margin-bottom:15px;">လိမ်လည်မှုများ၊ ပြဿနာများရှိပါက Admin သို့ တိုက်ရိုက်ဆက်သွယ်ပါ။</p>
-            <p><strong>Email:</strong> admin@greenmarket.com</p>
-            <p><strong>Phone:</strong> +95 9 123 456 789</p>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, deleteDoc, updateDoc, getDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDMuvAQcAfeSDEtWaFdMA8QHBBkGppIy6U",
@@ -318,6 +339,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
 
         let localUser = null;
         let globalPosts = [];
@@ -327,11 +349,21 @@
         let activeChatUid = null;     
         let activeChatName = null;
         let uploadedImageBase64 = "";
+        let isInitialLoad = true;
 
-        // Check Local Storage for Dark Mode
         if(localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
         }
+
+        // --- CUSTOM CONFIRM UI FUNCTION ---
+        window.showConfirmUI = function(msg, callback) {
+            document.getElementById('confirmMessage').innerText = msg;
+            document.getElementById('confirmYesBtn').onclick = function() {
+                callback();
+                closeModal('customConfirmModal');
+            };
+            openModal('customConfirmModal');
+        };
 
         // --- AUTH MONITOR ---
         onAuthStateChanged(auth, async (user) => {
@@ -340,11 +372,10 @@
                 document.getElementById('auth-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'block';
 
-                // Fetch existing profile data
                 const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
                 
-                let displayName = user.email.split('@')[0];
+                let displayName = user.displayName || user.email.split('@')[0];
                 let phone = "";
                 
                 if (docSnap.exists()) {
@@ -356,7 +387,6 @@
                 document.getElementById('user-name').value = displayName;
                 document.getElementById('user-phone').value = phone;
 
-                // Sync base user info
                 await setDoc(userDocRef, { uid: user.uid, name: displayName, email: user.email, phone: phone }, { merge: true });
 
                 initRealtimeSync();
@@ -367,19 +397,25 @@
             }
         });
 
-        // --- AUTH FUNCTIONS ---
+        // --- AUTH ACTIONS ---
         window.handleEmailAuth = async function() {
             const email = document.getElementById('auth-email').value.trim();
             const pass = document.getElementById('auth-password').value;
             const mode = document.getElementById('tab-login-mode').classList.contains('active') ? 'login' : 'signup';
-            if(!email || !pass) { showToast("ဖြည့်စွက်ရန် ကျန်ရှိနေပါသည်", "error"); return; }
+            if(!email || !pass) { showToast("အချက်အလက် ဖြည့်စွက်ရန် ကျန်ရှိနေပါသည်", "error"); return; }
             try {
                 if(mode === "login") await signInWithEmailAndPassword(auth, email, pass);
                 else await createUserWithEmailAndPassword(auth, email, pass);
                 showToast("အောင်မြင်ပါသည်။");
-            } catch(err) { showToast(err.message, "error"); }
+            } catch(err) { showToast("အကောင့်ဝင်ရန် သို့မဟုတ် ဖွင့်ရန် မအောင်မြင်ပါ", "error"); }
         }
         document.getElementById('emailAuthBtn').addEventListener('click', handleEmailAuth);
+        
+        window.handleGoogleAuth = async function() {
+            try { await signInWithPopup(auth, googleProvider); showToast("Google ဖြင့် အောင်မြင်စွာ ဝင်ရောက်ပါပြီ"); } 
+            catch(err) { showToast("Google Authentication ဝင်မရဖြစ်နေပါသည်", "error"); }
+        }
+        document.getElementById('googleAuthBtn').addEventListener('click', handleGoogleAuth);
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
         window.toggleAuthMode = function(mode) {
@@ -388,15 +424,23 @@
             document.getElementById('auth-btn-text').innerText = mode === 'login' ? 'အကောင့်ထဲဝင်မည်' : 'အကောင့်အသစ်ဆောက်မည်';
         };
 
-        // --- REALTIME SYNC ---
+        // --- REALTIME SYNC & NOTIFICATIONS ---
         function initRealtimeSync() {
             onSnapshot(collection(db, "users"), (snapshot) => {
                 activeUsersInNetwork = [];
+                let adminExists = false;
                 snapshot.forEach(doc => { 
                     const data = doc.data();
-                    if(data.uid === localUser.uid) savedPostIds = data.savedPosts || []; // Sync my saved posts
-                    else activeUsersInNetwork.push(data); 
+                    if(data.uid === localUser.uid) savedPostIds = data.savedPosts || []; 
+                    else {
+                        if(data.uid === 'admin_uid') adminExists = true;
+                        activeUsersInNetwork.push(data); 
+                    }
                 });
+                // Admin Account အား Chat list တွင် အမြဲထည့်သွင်းထားရန်
+                if(!adminExists) {
+                    activeUsersInNetwork.unshift({ uid: 'admin_uid', name: 'Platform Admin', phone: 'Official Support Support' });
+                }
                 renderChatList();
             });
 
@@ -407,23 +451,43 @@
             });
 
             onSnapshot(query(collection(db, "chats"), orderBy("timestamp", "asc")), (snapshot) => {
+                let incomingMessages = [];
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === "added") { incomingMessages.push(change.doc.data()); }
+                });
+
                 globalChats = [];
-                snapshot.forEach(doc => globalChats.push(doc.data()));
+                snapshot.forEach(doc => globalChats.push({ id: doc.id, ...doc.data() }));
+                
                 renderChatMessages();
+                renderChatList(); // Message Preview များကို update လုပ်ရန်
+
+                // NOTIFICATION SYSTEM
+                if (!isInitialLoad) {
+                    incomingMessages.forEach(msg => {
+                        if (msg.senderUid !== localUser.uid) {
+                            const isChatTabActive = document.querySelector('.tab-btn-chat').classList.contains('active');
+                            if (activeChatUid !== msg.senderUid || !isChatTabActive) {
+                                let sender = activeUsersInNetwork.find(u => u.uid === msg.senderUid) || { name: "အသုံးပြုသူ" };
+                                let txt = msg.type === 'image' ? "📷 ဓာတ်ပုံတစ်ပုံ ပို့လိုက်သည်" : msg.text;
+                                showToast(`💬 ${sender.name}: ${txt}`);
+                            }
+                        }
+                    });
+                }
+                isInitialLoad = false;
             });
         }
 
-        // --- FEED & SEARCH ---
+        // --- FEED RENDERING ---
         window.displayFeed = function(showOnlySaved = false) {
             const feed = document.getElementById('feed-container');
             feed.innerHTML = '';
-
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const searchCat = document.getElementById('searchCategory').value;
 
             let filteredPosts = globalPosts.filter(post => {
                 if(showOnlySaved && !savedPostIds.includes(post.id)) return false;
-                
                 const matchesSearch = post.title.toLowerCase().includes(searchTerm) || post.desc.toLowerCase().includes(searchTerm);
                 const matchesCat = (searchCat === "All") || (post.category === searchCat);
                 return matchesSearch && matchesCat;
@@ -436,19 +500,14 @@
                 const isSaved = savedPostIds.includes(post.id);
                 const isSold = post.status === 'sold';
 
-                let actionButtons = '';
-                if(isOwner) {
-                    actionButtons = `
-                        <button class="btn btn-danger btn-icon" onclick="deletePost('${post.id}')"><i class="fa-solid fa-trash"></i> ဖျက်မည်</button>
-                        ${!isSold ? `<button class="btn btn-warning btn-icon" onclick="markAsSold('${post.id}')"><i class="fa-solid fa-check"></i> ရောင်းပြီးပြီ</button>` : ''}
-                    `;
-                } else {
-                    actionButtons = `
-                        <button class="btn btn-primary btn-icon" onclick="openDirectChat('${post.sellerUid}', '${post.seller}')"><i class="fa-solid fa-comments"></i> Chat</button>
-                        <button class="btn btn-secondary btn-icon" onclick="toggleSavePost('${post.id}')"><i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i> ${isSaved ? 'Saved' : 'Save'}</button>
-                        <button class="btn btn-danger btn-icon" style="flex:0.5;" onclick="reportPost('${post.id}')"><i class="fa-solid fa-triangle-exclamation"></i></button>
-                    `;
-                }
+                let actionButtons = isOwner ? `
+                    <button class="btn btn-danger btn-icon" onclick="deletePost('${post.id}')"><i class="fa-solid fa-trash"></i> ဖျက်မည်</button>
+                    ${!isSold ? `<button class="btn btn-warning btn-icon" onclick="markAsSold('${post.id}')"><i class="fa-solid fa-check"></i> ရောင်းပြီးပြီ</button>` : ''}
+                ` : `
+                    <button class="btn btn-primary btn-icon" onclick="openDirectChat('${post.sellerUid}', '${post.seller}')"><i class="fa-solid fa-comments"></i> Chat</button>
+                    <button class="btn btn-secondary btn-icon" onclick="toggleSavePost('${post.id}')"><i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i> ${isSaved ? 'Saved' : 'Save'}</button>
+                    <button class="btn btn-danger btn-icon" style="flex:0.5;" onclick="reportPost('${post.id}')"><i class="fa-solid fa-triangle-exclamation"></i></button>
+                `;
 
                 feed.innerHTML += `
                     <div class="card product-card">
@@ -472,86 +531,82 @@
             });
         };
 
-        // --- NEW FEATURES LOGIC ---
-        window.toggleDarkMode = function() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        }
-
-        window.saveProfile = async function() {
-            const name = document.getElementById('user-name').value.trim();
-            const phone = document.getElementById('user-phone').value.trim();
-            if(!name) return showToast("အမည်ထည့်ပါ", "error");
-            await setDoc(doc(db, "users", localUser.uid), { name, phone }, { merge: true });
-            showToast("Profile ပြင်ဆင်ပြီးပါပြီ");
-        }
-
+        // --- USER WALL (VIEW USER PROFILE) ---
         window.viewUserProfile = async function(uid) {
-            const user = activeUsersInNetwork.find(u => u.uid === uid);
+            let user = activeUsersInNetwork.find(u => u.uid === uid);
+            if(!user && uid === 'admin_uid') user = { name: 'Platform Admin', phone: 'Official Support' };
+            if(uid === localUser.uid) user = { name: document.getElementById('user-name').value, phone: document.getElementById('user-phone').value };
             if(!user) return showToast("အချက်အလက် ရှာမတွေ့ပါ", "error");
-            
+
             document.getElementById('modalUserName').innerText = user.name;
-            document.getElementById('modalUserPhone').innerText = user.phone || "No Bio / Phone provided";
+            document.getElementById('modalUserPhone').innerText = user.phone || "No phone or bio updated.";
             
-            document.getElementById('modalChatBtn').onclick = () => {
-                closeModal('userProfileModal');
-                openDirectChat(user.uid, user.name);
-            };
+            // Build User Wall Listings
+            const wallContainer = document.getElementById('userWallPosts');
+            wallContainer.innerHTML = `<h4 style="font-size:13px; text-align:left; color:var(--primary); margin-bottom:8px;"><i class="fa-solid fa-boxes-stacked"></i> တင်ထားသော ပစ္စည်းများ</h4>`;
+            
+            let userPosts = globalPosts.filter(p => p.sellerUid === uid);
+            if(userPosts.length === 0) {
+                wallContainer.innerHTML += `<p style="font-size:12px; color:var(--text-muted); padding:10px 0;">တင်ထားသောပစ္စည်းမရှိသေးပါ</p>`;
+            } else {
+                userPosts.forEach(post => {
+                    wallContainer.innerHTML += `
+                        <div style="display:flex; align-items:center; gap:10px; background:var(--white); padding:8px; border-radius:8px; margin-bottom:6px; border:1px solid var(--border);">
+                            <img src="${post.image}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">
+                            <div style="flex:1; text-align:left;">
+                                <div style="font-size:13px; font-weight:700;">${post.title}</div>
+                                <div style="font-size:12px; color:var(--primary); font-weight:bold;">$${post.price}</div>
+                            </div>
+                        </div>`;
+                });
+            }
+
+            document.getElementById('modalChatBtn').onclick = () => { closeModal('userProfileModal'); openDirectChat(uid, user.name); };
             openModal('userProfileModal');
         }
 
-        window.deletePost = async function(postId) {
-            if(confirm("ဒီပစ္စည်းကို အမှန်တကယ် ဖျက်မှာလား?")) {
-                await deleteDoc(doc(db, "posts", postId));
-                showToast("ဖျက်ပြီးပါပြီ");
-            }
+        // --- CUSTOM UI ACTIONS ---
+        window.deletePost = function(postId) {
+            showConfirmUI("ဒီပစ္စည်းကို အမှန်တကယ် ဖျက်မှာလား?", async () => {
+                await deleteDoc(doc(db, "posts", postId)); showToast("ဖျက်ပြီးပါပြီ");
+            });
         }
 
-        window.markAsSold = async function(postId) {
-            if(confirm("ရောင်းထွက်သွားပြီလို့ သတ်မှတ်မလား?")) {
-                await updateDoc(doc(db, "posts", postId), { status: 'sold' });
-                showToast("Sold Out သတ်မှတ်ပြီးပါပြီ");
-            }
+        window.markAsSold = function(postId) {
+            showConfirmUI("ရောင်းထွက်သွားပြီလို့ သတ်မှတ်မလား?", async () => {
+                await updateDoc(doc(db, "posts", postId), { status: 'sold' }); showToast("Sold Out သတ်မှတ်ပြီးပါပြီ");
+            });
+        }
+
+        window.reportPost = function(postId) {
+            showConfirmUI("ဤပစ္စည်းအား Admin ထံ Report ပို့မှာ သေချာပါသလား?", async () => {
+                await addDoc(collection(db, "reports"), { postId, reporterUid: localUser.uid, timestamp: Date.now() });
+                showToast("Admin ထံသို့ Report ပို့ပြီးပါပြီ။");
+            });
+        }
+
+        window.openAdminChat = function() {
+            openDirectChat('admin_uid', 'Platform Admin');
         }
 
         window.toggleSavePost = async function(postId) {
             const userRef = doc(db, "users", localUser.uid);
-            if(savedPostIds.includes(postId)) {
-                await updateDoc(userRef, { savedPosts: arrayRemove(postId) });
-                showToast("Saved List မှ ဖြုတ်လိုက်ပါပြီ");
-            } else {
-                await updateDoc(userRef, { savedPosts: arrayUnion(postId) });
-                showToast("Saved List သို့ မှတ်သားလိုက်ပါပြီ");
-            }
+            if(savedPostIds.includes(postId)) { await updateDoc(userRef, { savedPosts: arrayRemove(postId) }); showToast("Saved List မှ ဖြုတ်လိုက်ပါပြီ"); } 
+            else { await updateDoc(userRef, { savedPosts: arrayUnion(postId) }); showToast("Saved List သို့ မှတ်သားလိုက်ပါပြီ"); }
         }
 
-        window.reportPost = async function(postId) {
-            if(confirm("ဤပစ္စည်းအား Report လုပ်မည်မှာ သေချာပါသလား?")) {
-                await addDoc(collection(db, "reports"), { postId, reporterUid: localUser.uid, timestamp: Date.now() });
-                showToast("Admin ထံသို့ Report ပို့ပြီးပါပြီ။");
-            }
-        }
+        window.showSavedPosts = function() { switchTab('home'); document.getElementById('searchInput').value = ''; displayFeed(true); showToast("သိမ်းထားသော ပစ္စည်းများပြသနေသည်"); }
 
-        window.showSavedPosts = function() {
-            switchTab('home');
-            document.getElementById('searchInput').value = '';
-            displayFeed(true); // showOnlySaved = true
-            showToast("သိမ်းထားသော ပစ္စည်းများပြသနေသည်");
-        }
-
-        // --- POST CREATION ---
+        // --- PRODUCT UPLOAD ---
         document.getElementById('p-image-file').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+            const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     let w = img.width, h = img.height;
-                    if (w > h && w > 600) { h *= 600 / w; w = 600; }
-                    else if (h > 600) { w *= 600 / h; h = 600; }
+                    if (w > h && w > 600) { h *= 600 / w; w = 600; } else if (h > 600) { w *= 600 / h; h = 600; }
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                     uploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
@@ -569,56 +624,96 @@
             const price = document.getElementById('p-price').value.trim();
             const category = document.getElementById('p-category').value;
             const desc = document.getElementById('p-desc').value.trim();
-
             if(!title || !price || !uploadedImageBase64) return showToast("အချက်အလက် ပြည့်စုံစွာ ဖြည့်ပါ", "error");
 
-            await addDoc(collection(db, "posts"), {
-                title, price, category, desc, image: uploadedImageBase64, status: 'active',
-                seller: document.getElementById('user-name').value, sellerUid: localUser.uid, timestamp: Date.now()
-            });
-
-            document.getElementById('p-title').value = ''; document.getElementById('p-price').value = ''; 
-            document.getElementById('p-desc').value = ''; uploadedImageBase64 = "";
-            document.getElementById('imgUploadBtn').style.backgroundImage = '';
-            document.getElementById('previewText').style.display = 'block';
-
-            showToast("ပစ္စည်းတင်ပြီးပါပြီ။");
-            switchTab('home');
+            await addDoc(collection(db, "posts"), { title, price, category, desc, image: uploadedImageBase64, status: 'active', seller: document.getElementById('user-name').value, sellerUid: localUser.uid, timestamp: Date.now() });
+            document.getElementById('p-title').value = ''; document.getElementById('p-price').value = ''; document.getElementById('p-desc').value = ''; uploadedImageBase64 = "";
+            document.getElementById('imgUploadBtn').style.backgroundImage = ''; document.getElementById('previewText').style.display = 'block';
+            showToast("ပစ္စည်းတင်ပြီးပါပြီ။"); switchTab('home');
         });
 
-        // --- CHAT SYSTEM ---
+        // --- CHAT SYSTEM LOGIC ---
         window.sendChatMessage = async function() {
             const input = document.getElementById('chatInputField');
             const text = input.value.trim();
             if(!text || !activeChatUid) return;
             const computedRoomId = [localUser.uid, activeChatUid].sort().join("_");
-            await addDoc(collection(db, "chats"), { room: computedRoomId, senderUid: localUser.uid, text: text, timestamp: Date.now() });
+            await addDoc(collection(db, "chats"), { room: computedRoomId, senderUid: localUser.uid, text: text, type: 'text', timestamp: Date.now() });
             input.value = '';
         }
         document.getElementById('sendMsgBtn').addEventListener('click', sendChatMessage);
         document.getElementById('chatInputField').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); });
 
+        // Chat Box Image Sharing Integration
+        document.getElementById('chat-image-input').addEventListener('change', (e) => {
+            const file = e.target.files[0]; if (!file || !activeChatUid) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                const img = new Image();
+                img.onload = async function() {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if (w > 400) { h *= 400 / w; w = 400; } // chat အတွက် ပုံအကျဥ်းချုံ့ခြင်း
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    let chatImgBase64 = canvas.toDataURL('image/jpeg', 0.5);
+                    
+                    const computedRoomId = [localUser.uid, activeChatUid].sort().join("_");
+                    await addDoc(collection(db, "chats"), { room: computedRoomId, senderUid: localUser.uid, text: "", image: chatImgBase64, type: 'image', timestamp: Date.now() });
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        window.deleteChatMessage = function(msgId) {
+            showConfirmUI("ဤမက်ဆေ့ခ်ျအား နှစ်ဖက်လုံးမှ ပြန်ဖျက်လိုပါသလား?", async () => {
+                await deleteDoc(doc(db, "chats", msgId));
+                showToast("မက်ဆေ့ခ်ျအား ဖျက်လိုက်ပါပြီ");
+            });
+        }
+
+        // CHAT SIDEBAR LIST WITH PREVIEW
         function renderChatList() {
-            const container = document.getElementById('chatListContainer');
-            container.innerHTML = '';
+            const container = document.getElementById('chatListContainer'); container.innerHTML = '';
             activeUsersInNetwork.forEach(user => {
                 const isActive = (user.uid === activeChatUid) ? 'active' : '';
+                const currentRoomId = [localUser.uid, user.uid].sort().join("_");
+                
+                // နောက်ဆုံး စာတွဲ ရှာဖွေခြင်း (Preview ပြရန်)
+                let userRoomMsgs = globalChats.filter(m => m.room === currentRoomId);
+                let lastMsg = userRoomMsgs[userRoomMsgs.length - 1];
+                let previewText = "စကားပြောဆိုမှု မရှိသေးပါ";
+                if(lastMsg) {
+                    previewText = lastMsg.type === 'image' ? "📷 ဓာတ်ပုံတစ်ပုံ ပို့လိုက်သည်" : lastMsg.text;
+                }
+                if(previewText.length > 24) previewText = previewText.substring(0, 22) + "...";
+
                 container.innerHTML += `
                     <div class="chat-item ${isActive}" onclick="selectChatUser('${user.uid}', '${user.name}')">
                         <div class="chat-avatar">${user.name.charAt(0).toUpperCase()}</div>
-                        <div class="chat-item-info"><div class="chat-item-name">${user.name}</div></div>
+                        <div class="chat-item-info">
+                            <div class="chat-item-name">${user.name}</div>
+                            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${previewText}</div>
+                        </div>
                     </div>`;
             });
         }
 
+        // CHAT WINDOW MESSAGES RENDERING
         function renderChatMessages() {
-            const container = document.getElementById('chatMessagesContainer');
-            container.innerHTML = '';
+            const container = document.getElementById('chatMessagesContainer'); container.innerHTML = '';
             if(!activeChatUid) return;
             const currentRoomId = [localUser.uid, activeChatUid].sort().join("_");
+            
             globalChats.filter(m => m.room === currentRoomId).forEach(m => {
                 const side = (m.senderUid === localUser.uid) ? 'sent' : 'received';
-                container.innerHTML += `<div class="msg ${side}">${m.text}</div>`;
+                let content = m.type === 'image' ? `<img src="${m.image}" onclick="window.open('${m.image}')">` : m.text;
+                
+                // စာဖျက်ရန် Trash Icon ထည့်သွင်းခြင်း
+                let deleteIcon = (m.senderUid === localUser.uid) ? `<i class="fa-solid fa-trash-can msg-delete-btn" onclick="deleteChatMessage('${m.id}')"></i>` : '';
+
+                container.innerHTML += `<div class="msg ${side}"><div>${content}</div>${deleteIcon}</div>`;
             });
             container.scrollTop = container.scrollHeight;
         }
@@ -632,16 +727,11 @@
 
         window.openDirectChat = function(sellerUid, sellerName) {
             if(sellerUid === localUser.uid) return showToast("မိမိကိုယ်တိုင် ဖြစ်နေပါသည်", "error");
-            switchTab('chat');
-            selectChatUser(sellerUid, sellerName);
+            switchTab('chat'); selectChatUser(sellerUid, sellerName);
         };
+        window.closeChatMobile = function() { document.getElementById('chatMainBox').classList.remove('active-conversation'); activeChatUid = null; }
 
-        window.closeChatMobile = function() {
-            document.getElementById('chatMainBox').classList.remove('active-conversation');
-            activeChatUid = null;
-        }
-
-        // --- UTILS ---
+        // --- APPLICATION UTILS ---
         window.switchTab = function(name) {
             document.querySelectorAll('.tab-content').forEach(el => { el.classList.remove('active'); el.style.display='none'; });
             document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(el => el.classList.remove('active'));
@@ -651,16 +741,28 @@
             if(name === 'home') displayFeed();
         };
 
+        window.toggleDarkMode = function() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        window.saveProfile = async function() {
+            const name = document.getElementById('user-name').value.trim();
+            const phone = document.getElementById('user-phone').value.trim();
+            if(!name) return showToast("အမည်ထည့်ပါ", "error");
+            await setDoc(doc(db, "users", localUser.uid), { name, phone }, { merge: true });
+            showToast("Profile ပြင်ဆင်ပြီးပါပြီ");
+        }
+
         window.openModal = function(id) { document.getElementById(id).classList.add('active'); }
         window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); }
 
         window.showToast = function(msg, type = 'success') {
             const box = document.createElement('div');
-            box.className = `toast-card ${type === 'error' ? 'toast-error' : ''}`;
-            box.innerHTML = `<span>${msg}</span>`;
+            box.className = `toast-card ${type === 'error' ? 'toast-error' : ''}`; box.innerHTML = `<span>${msg}</span>`;
             document.getElementById('toast-container').appendChild(box); 
             setTimeout(() => box.classList.add('show'), 20);
-            setTimeout(() => { box.classList.remove('show'); setTimeout(() => box.remove(), 400); }, 3000);
+            setTimeout(() => { box.classList.remove('show'); setTimeout(() => box.remove(), 400); }, 3200);
         };
     </script>
 </body>

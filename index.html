@@ -225,6 +225,7 @@
 
         let currentAuthMode = "login";
         let currentActiveChatPartner = null;
+        let chatUnsubscribeListener = null;
 
         function showLoader() {
             document.getElementById('loading-overlay').style.display = 'flex';
@@ -245,18 +246,30 @@
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
                 document.getElementById(navId).classList.add('active-nav');
             }
+            // Chat Room ကနေ တခြားနေရာရွှေ့ရင် Listener ကို ပိတ်ပစ်မယ်
+            if (panelId !== 'chat-panel' && chatUnsubscribeListener) {
+                chatUnsubscribeListener();
+                chatUnsubscribeListener = null;
+            }
         }
 
-        // Navigation Tab Event Listeners
+        // Navigation Tabs click handlers
         document.getElementById('nav-market').addEventListener('click', () => switchPanel('marketplace-panel', 'nav-market'));
-        document.getElementById('nav-chat').addEventListener('click', () => switchPanel('chat-panel', 'nav-chat'));
+        document.getElementById('nav-chat').addEventListener('click', () => {
+            if(currentActiveChatPartner) {
+                switchPanel('chat-panel', 'nav-chat');
+            } else {
+                alert("စကားပြောရန် ပစ္စည်းရောင်းသူတစ်ဦးဦး၏ Profile ထဲက 'စကားပြောမည်' ကို အရင်နှိပ်ပေးပါဗျာ။");
+                switchPanel('marketplace-panel', 'nav-market');
+            }
+        });
         document.getElementById('nav-settings').addEventListener('click', () => switchPanel('settings-panel', 'nav-settings'));
         
-        // FIXED: Back Buttons Event Listeners အပြည့်အစုံ ချိတ်ဆက်မှု
+        // Back Buttons
         document.getElementById('back-to-market-btn').addEventListener('click', () => switchPanel('marketplace-panel', 'nav-market'));
         document.getElementById('back-from-wall-btn').addEventListener('click', () => switchPanel('marketplace-panel', 'nav-market'));
 
-        // AUTHENTICATION MODE TOGGLE
+        // Auth toggle
         const toggleBtn = document.getElementById('auth-toggle-mode');
         toggleBtn.addEventListener('click', () => {
             if(currentAuthMode === "login") {
@@ -272,7 +285,7 @@
             }
         });
 
-        // EMAIL/PASSWORD AUTH
+        // Auth main action
         document.getElementById('auth-main-btn').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value.trim();
             const pass = document.getElementById('auth-password').value;
@@ -296,7 +309,7 @@
             }
         });
 
-        // GOOGLE SIGNIN
+        // Google Authentication
         document.getElementById('auth-google-btn').addEventListener('click', async () => {
             showLoader();
             try {
@@ -317,7 +330,7 @@
             signOut(auth);
         });
 
-        // 🔄 FIXED AUTH STATE LISTENER (LOADING မငြိတော့ပါ)
+        // 🔄 FIXED AUTH STATE LISTENER (LOADING မညိတော့ပါ)
         onAuthStateChanged(auth, async (user) => {
             try {
                 if(user) {
@@ -330,13 +343,13 @@
                     switchPanel('auth-panel');
                 }
             } catch (err) {
-                console.error("Auth initialization error: ", err);
+                console.error("Auth process error", err);
             } finally {
-                hideLoader(); // ဘယ်လိုအခြေအနေမျိုးပဲဖြစ်ဖြစ် Loading Screen ကို အပြီးပိတ်ပေးမည်
+                hideLoader();
             }
         });
 
-        // PROFILE SYSTEM
+        // Profile Loading
         async function loadUserProfile(uid) {
             const docSnap = await getDoc(doc(db, "users", uid));
             if(docSnap.exists()) {
@@ -346,6 +359,7 @@
             }
         }
 
+        // Profile Saving
         document.getElementById('save-profile-btn').addEventListener('click', async () => {
             const user = auth.currentUser;
             if(!user) return;
@@ -381,7 +395,7 @@
             }
         });
 
-        // MARKETPLACE SYSTEM
+        // Marketplace Realtime Feed
         function listenToMarketplacePosts() {
             onSnapshot(collection(db, "posts"), (snapshot) => {
                 const container = document.getElementById('all-posts-container');
@@ -406,6 +420,7 @@
             });
         }
 
+        // Generate Demo Post
         document.getElementById('demo-post-btn').addEventListener('click', async () => {
             const user = auth.currentUser;
             if(!user) return;
@@ -429,13 +444,11 @@
             }
         });
 
-        // USER WALL & PROFILE VIEW SYSTEM
+        // User Wall View
         window.viewUserWall = async function(targetUid) {
             showLoader();
             switchPanel('user-wall-panel');
             document.getElementById('wall-report-btn').setAttribute('onclick', `openReportModal('${targetUid}', 'user')`);
-            
-            // FIXED: ရောင်းသူနှင့် စကားပြောရန် ခလုတ်အား Data ချိတ်ဆက်ပေးခြင်း
             document.getElementById('wall-chat-btn').setAttribute('onclick', `openDirectChat('${targetUid}')`);
 
             try {
@@ -475,24 +488,93 @@
             }
         };
 
-        // FIXED: CHAT OPEN LOGIC FROM WALL
+        // ==========================================
+        // 💬 100% WORKING REALTIME CHAT SYSTEM LOGIC
+        // ==========================================
         window.openDirectChat = async function(targetUid) {
+            const currentUser = auth.currentUser;
+            if(!currentUser) return alert("စကားပြောရန် အရင်ဆုံး လော့ဂ်အင်ဝင်ပါဗျာ။");
+            if(currentUser.uid === targetUid) return alert("မိမိကိုယ်တိုင် ပြန်ပြီးစာပို့၍ မရပါဗျာ။");
+
             showLoader();
+            currentActiveChatPartner = targetUid;
+
+            if (chatUnsubscribeListener) {
+                chatUnsubscribeListener();
+            }
+
             try {
+                // တစ်ဖက်လူ နာမည် ယူမယ်
                 const userSnap = await getDoc(doc(db, "users", targetUid));
                 if(userSnap.exists()) {
-                    const uData = userSnap.data();
-                    document.getElementById('chat-partner-name').innerText = uData.displayName || "စကားပြောခန်း";
-                    currentActiveChatPartner = targetUid;
-                    switchPanel('chat-panel', 'nav-chat');
-                    // ဤနေရာတွင် စကားပြောစာတိုများကို လိုအပ်သလို Firestore Realtime Query ဆက်လက်ချိတ်ဆက်နိုင်ပါသည်
+                    document.getElementById('chat-partner-name').innerText = userSnap.data().displayName || "စကားပြောခန်း";
                 }
+
+                // Chat ID သတ်မှတ်ခြင်း (A_B ပုံစံဖြင့် အမြဲတမ်း Unique ဖြစ်အောင်လုပ်ခြင်း)
+                const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+
+                switchPanel('chat-panel', 'nav-chat');
+
+                // Realtime Chat Messages စောင့်ကြည့်နားထောင်ခြင်း
+                const q = query(collection(db, "messages"), where("chatId", "==", chatId));
+                chatUnsubscribeListener = onSnapshot(q, (snapshot) => {
+                    const msgContainer = document.getElementById('chat-messages-container');
+                    msgContainer.innerHTML = "";
+
+                    // အချိန်အလိုက် စီပေးခြင်း
+                    const sortedDocs = snapshot.docs.sort((a, b) => {
+                        const t1 = a.data().timestamp ? a.data().timestamp.toMillis() : 0;
+                        const t2 = b.data().timestamp ? b.data().timestamp.toMillis() : 0;
+                        return t1 - t2;
+                    });
+
+                    sortedDocs.forEach((doc) => {
+                        const mData = doc.data();
+                        const isMe = mData.senderId === currentUser.uid;
+                        const msgClass = isMe ? "msg msg-me" : "msg msg-them";
+                        msgContainer.innerHTML += `<div class="${msgClass}">${mData.text}</div>`;
+                    });
+
+                    // စာအသစ်ပေါ်တိုင်း အောက်ဆုံးသို့ Scroll ဆွဲချပေးခြင်း
+                    msgContainer.scrollTop = msgContainer.scrollHeight;
+                });
+
             } catch(e) {
-                alert("Chat open failed: " + e.message);
+                alert("Chat Error: " + e.message);
             } finally {
                 hideLoader();
             }
         };
+
+        // စာပို့ရန် ခလုတ်နှိပ်ခြင်း
+        async function sendMessage() {
+            const currentUser = auth.currentUser;
+            const textInput = document.getElementById('chat-text-input');
+            const messageText = textInput.value.trim();
+
+            if(!currentUser || !currentActiveChatPartner || !messageText) return;
+
+            const chatId = currentUser.uid < currentActiveChatPartner ? `${currentUser.uid}_${currentActiveChatPartner}` : `${currentActiveChatPartner}_${currentUser.uid}`;
+            textInput.value = ""; // ချက်ချင်း ရှင်းထုတ်မယ်
+
+            try {
+                await addDoc(collection(db, "messages"), {
+                    chatId: chatId,
+                    senderId: currentUser.uid,
+                    receiverId: currentActiveChatPartner,
+                    text: messageText,
+                    timestamp: new Date()
+                });
+            } catch(e) {
+                alert("စာပို့၍မရပါဗျာ- " + e.message);
+            }
+        }
+
+        document.getElementById('chat-send-btn').addEventListener('click', sendMessage);
+        document.getElementById('chat-text-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+
 
         // REPORT SYSTEM
         window.openReportModal = function(targetId, type) {

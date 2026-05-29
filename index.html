@@ -439,7 +439,7 @@
                 });
                 // Admin Account အား Chat list တွင် အမြဲထည့်သွင်းထားရန်
                 if(!adminExists) {
-                    activeUsersInNetwork.unshift({ uid: 'admin_uid', name: 'Platform Admin', phone: 'Official Support Support' });
+                    activeUsersInNetwork.unshift({ uid: 'admin_uid', name: 'Platform Admin', phone: 'Official Support' });
                 }
                 renderChatList();
             });
@@ -462,10 +462,11 @@
                 renderChatMessages();
                 renderChatList(); // Message Preview များကို update လုပ်ရန်
 
-                // NOTIFICATION SYSTEM
+                // NOTIFICATION SYSTEM (ပြင်ဆင်ပြီး)
                 if (!isInitialLoad) {
                     incomingMessages.forEach(msg => {
-                        if (msg.senderUid !== localUser.uid) {
+                        // ကိုယ်နဲ့သက်ဆိုင်တဲ့ Room ဟုတ်မဟုတ် စစ်ဆေးခြင်း
+                        if (msg.room.includes(localUser.uid) && msg.senderUid !== localUser.uid) {
                             const isChatTabActive = document.querySelector('.tab-btn-chat').classList.contains('active');
                             if (activeChatUid !== msg.senderUid || !isChatTabActive) {
                                 let sender = activeUsersInNetwork.find(u => u.uid === msg.senderUid) || { name: "အသုံးပြုသူ" };
@@ -673,17 +674,37 @@
             });
         }
 
-        // CHAT SIDEBAR LIST WITH PREVIEW
+        // CHAT SIDEBAR LIST WITH PREVIEW (ပြင်ဆင်ပြီး)
         function renderChatList() {
-            const container = document.getElementById('chatListContainer'); container.innerHTML = '';
-            activeUsersInNetwork.forEach(user => {
+            const container = document.getElementById('chatListContainer'); 
+            container.innerHTML = '';
+            
+            // စကားပြောဖူးသူများနှင့် လက်ရှိရွေးချယ်ထားသူကိုသာ စစ်ထုတ်ခြင်း
+            const filteredUsers = activeUsersInNetwork.filter(user => {
+                const currentRoomId = [localUser.uid, user.uid].sort().join("_");
+                const hasChatHistory = globalChats.some(m => m.room === currentRoomId);
+                const isCurrentlySelected = (user.uid === activeChatUid);
+                
+                return hasChatHistory || isCurrentlySelected;
+            });
+
+            // စကားပြောဖူးသူ တစ်ယောက်မှ မရှိသေးလျှင်
+            if (filteredUsers.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:30px 20px; color:var(--text-muted); font-size:13px;">
+                    <i class="fa-solid fa-message" style="font-size:24px; color:var(--border); margin-bottom:10px;"></i><br>
+                    စကားပြောဆိုထားမှု မရှိသေးပါ
+                </div>`;
+                return;
+            }
+
+            filteredUsers.forEach(user => {
                 const isActive = (user.uid === activeChatUid) ? 'active' : '';
                 const currentRoomId = [localUser.uid, user.uid].sort().join("_");
                 
-                // နောက်ဆုံး စာတွဲ ရှာဖွေခြင်း (Preview ပြရန်)
                 let userRoomMsgs = globalChats.filter(m => m.room === currentRoomId);
                 let lastMsg = userRoomMsgs[userRoomMsgs.length - 1];
-                let previewText = "စကားပြောဆိုမှု မရှိသေးပါ";
+                let previewText = "စကားပြောဆိုရန်...";
+                
                 if(lastMsg) {
                     previewText = lastMsg.type === 'image' ? "📷 ဓာတ်ပုံတစ်ပုံ ပို့လိုက်သည်" : lastMsg.text;
                 }

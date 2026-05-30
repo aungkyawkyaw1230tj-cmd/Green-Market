@@ -40,7 +40,8 @@
         body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 90px; -webkit-tap-highlight-color: transparent; transition: background 0.3s, color 0.3s; }
 
         /* --- AUTH SCREEN --- */
-        #auth-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #064e3b, #022c22); display: flex; align-items: center; justify-content: center; z-index: 20000; padding: 20px; }
+        /* Persistent Login ပြဿနာဖြေရှင်းရန် display: none သတ်မှတ်ထားသည် */
+        #auth-screen { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #064e3b, #022c22); align-items: center; justify-content: center; z-index: 20000; padding: 20px; }
         .auth-card { background: var(--white); width: 100%; max-width: 400px; border-radius: 24px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; }
         .auth-logo { font-size: 32px; color: var(--primary); font-weight: 800; margin-bottom: 10px; }
         .auth-tabs { display: flex; background: var(--bg-body); padding: 4px; border-radius: 12px; margin-bottom: 20px; }
@@ -84,7 +85,7 @@
         .btn-secondary { background-color: var(--accent-bg); color: var(--primary-dark); border: 1px solid var(--primary); }
         .btn-google { background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); }
 
-        /* --- PRODUCT & SEARCH UI --- */
+        /* --- PRODUCT UI --- */
         .search-bar-container { display: flex; gap: 10px; margin-bottom: 20px; }
         .search-bar-container input { flex: 2; }
         .search-bar-container select { flex: 1; }
@@ -92,7 +93,6 @@
         .product-card { border: 1px solid var(--border); padding: 16px; position: relative; }
         .product-img-holder { width: 100%; height: 240px; border-radius: 14px; overflow: hidden; margin-bottom: 16px; position: relative; background-color: var(--bg-body); }
         .product-img-holder img { width: 100%; height: 100%; object-fit: cover; }
-        
         .sold-badge { position: absolute; top: 10px; right: 10px; background: rgba(239,68,68,0.9); color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; backdrop-filter: blur(4px); }
         .sold-overlay { opacity: 0.6; }
 
@@ -100,11 +100,10 @@
         .product-title { font-size: 18px; font-weight: 700; color: var(--primary-dark); }
         .product-price { background-color: var(--accent-bg); color: var(--primary); padding: 6px 16px; border-radius: 30px; font-weight: 800; }
         
-        .seller-link { cursor: pointer; color: var(--verified-blue); font-weight: bold; text-decoration: underline; }
+        .seller-link { cursor: pointer; font-weight: bold; text-decoration: none; color: var(--text-main); }
         
         .action-bar { display: flex; gap: 10px; margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; flex-wrap: wrap; }
         .btn-icon { flex: 1; min-height: 44px; font-size: 14px; }
-
         .image-upload-preview { width: 100%; height: 160px; border: 2.5px dashed var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 700; cursor: pointer; background-size: cover; background-position: center; }
 
         /* --- CHAT SYSTEM --- */
@@ -190,6 +189,7 @@
                 <button class="nav-btn active tab-btn-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i> Home</button>
                 <button class="nav-btn tab-btn-create" onclick="switchTab('create')"><i class="fa-solid fa-circle-plus"></i> တင်ရန်</button>
                 <button class="nav-btn tab-btn-chat" onclick="switchTab('chat')"><i class="fa-solid fa-comments"></i> မက်ဆေ့ခ်ျ</button>
+                <button class="nav-btn tab-btn-noti" onclick="switchTab('noti')"><i class="fa-solid fa-bell"></i> Noti</button>
                 <button class="nav-btn tab-btn-profile" onclick="switchTab('profile')"><i class="fa-solid fa-user-gear"></i> Settings</button>
             </nav>
         </header>
@@ -198,6 +198,7 @@
             <button class="mobile-nav-btn active tab-btn-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i>Home</button>
             <button class="mobile-nav-btn tab-btn-create" onclick="switchTab('create')"><i class="fa-solid fa-circle-plus"></i>တင်ရန်</button>
             <button class="mobile-nav-btn tab-btn-chat" onclick="switchTab('chat')"><i class="fa-solid fa-comments"></i>Chat</button>
+            <button class="mobile-nav-btn tab-btn-noti" onclick="switchTab('noti')"><i class="fa-solid fa-bell"></i>Noti</button>
             <button class="mobile-nav-btn tab-btn-profile" onclick="switchTab('profile')"><i class="fa-solid fa-user-gear"></i>Settings</button>
         </div>
 
@@ -269,6 +270,25 @@
                 </div>
             </div>
 
+            <div id="tab-noti" class="tab-content">
+                <div class="card">
+                    <h2><i class="fa-solid fa-bell"></i> Notifications</h2>
+                    <div id="noti-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                </div>
+            </div>
+
+            <div id="tab-policy" class="tab-content">
+                <div class="card">
+                    <h2><i class="fa-solid fa-file-contract"></i> User Policy & Rules</h2>
+                    <div style="line-height: 1.8; color: var(--text-muted); font-size: 14px;">
+                        <p><b>၁။ အထွေထွေ စည်းမျဉ်းများ:</b> ဤ Platform ပေါ်တွင် တရားမဝင်သော ပစ္စည်းများ၊ လိမ်လည်မှုများနှင့် Spam များကို လုံးဝ ခွင့်မပြုပါ။</p>
+                        <p><b>၂။ Escrow ဝန်ဆောင်မှု:</b> ငွေပေးချေမှုများကို လုံခြုံစေရန် Admin မှ ကြားခံဆောင်ရွက်ပေးပါသည်။</p>
+                        <p><b>၃။ Admin လုပ်ပိုင်ခွင့်:</b> စည်းမျဉ်းချိုးဖောက်သော Post များကို Admin မှ အချိန်မရွေး ဖျက်ပစ်နိုင်ခွင့်ရှိပါသည်။</p>
+                        <p><b>၄။ Report စနစ်:</b> မသင်္ကာဖွယ်ရာ အကောင့်များ သို့မဟုတ် Post များကို တွေ့ရှိပါက Report ပြုလုပ်နိုင်ပြီး Admin ထံ တိုက်ရိုက်ရောက်ရှိမည်ဖြစ်သည်။</p>
+                    </div>
+                </div>
+            </div>
+
             <div id="tab-profile" class="tab-content">
                 <div class="card">
                     <h2><i class="fa-solid fa-user-shield"></i> Profile Settings</h2>
@@ -281,7 +301,7 @@
                     <h2><i class="fa-solid fa-gear"></i> App Settings</h2>
                     <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i> Dark / Light Mode</button>
                     <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="showSavedPosts()"><i class="fa-solid fa-bookmark"></i> သိမ်းဆည်းထားသော (Saved Posts)</button>
-                    <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="openModal('aboutModal')"><i class="fa-solid fa-circle-info"></i> About App</button>
+                    <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="switchTab('policy')"><i class="fa-solid fa-shield"></i> User Policy</button>
                     <button class="btn btn-secondary" style="margin-bottom: 10px;" onclick="openAdminChat()"><i class="fa-solid fa-headset"></i> Admin Contact (Chat)</button>
                     <button class="btn btn-danger" id="logoutBtn" style="margin-top:20px;"><i class="fa-solid fa-right-from-bracket"></i> အကောင့်မှ ထွက်မည်</button>
                 </div>
@@ -314,21 +334,13 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="aboutModal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('aboutModal')"><i class="fa-solid fa-xmark"></i></button>
-            <h2 style="justify-content: center;"><i class="fa-solid fa-leaf"></i> GreenMarket</h2>
-            <p style="color:var(--text-muted); line-height:1.6;">Version 1.0.0<br>Secure C2C Trading Platform with Escrow features. Developed for the community.</p>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, deleteDoc, updateDoc, getDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, deleteDoc, updateDoc, getDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // --- TELEGRAM BOT INTEGRATION ---
-        const TELEGRAM_BOT_TOKEN = '8791510118:AAFQsQHtj3X-deb1tUbaUmhVqvM6n1-r0GM'; 
+        const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'; // Token အသစ်ယူပြီး ဒီမှာထည့်ပါ
         const ADMIN_CHAT_ID = '8693193416'; 
 
         window.sendToTelegramAdmin = async function(message) {
@@ -337,15 +349,9 @@
                 await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: ADMIN_CHAT_ID,
-                        text: message,
-                        parse_mode: 'HTML'
-                    })
+                    body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text: message, parse_mode: 'HTML' })
                 });
-            } catch (error) {
-                console.error("Telegram သို့ ပို့ရာတွင် အမှားအယွင်းဖြစ်နေပါသည်", error);
-            }
+            } catch (error) { console.error("Telegram Error", error); }
         };
 
         const firebaseConfig = {
@@ -360,6 +366,10 @@
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
 
+        const ADMIN_EMAIL = "aungkyawkyaw1230tj@gmail.com";
+        let isAdmin = false;
+        let realAdminUid = null;
+
         let localUser = null;
         let globalPosts = [];
         let globalChats = [];
@@ -370,22 +380,26 @@
         let uploadedImageBase64 = "";
         let isInitialLoad = true;
 
-        if(localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-        }
+        if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
 
         window.showConfirmUI = function(msg, callback) {
             document.getElementById('confirmMessage').innerText = msg;
-            document.getElementById('confirmYesBtn').onclick = function() {
-                callback();
-                closeModal('customConfirmModal');
-            };
+            document.getElementById('confirmYesBtn').onclick = function() { callback(); closeModal('customConfirmModal'); };
             openModal('customConfirmModal');
         };
+
+        window.renderName = function(userEmail, userName) {
+            if(userEmail === ADMIN_EMAIL) {
+                return `${userName} <i class="fa-solid fa-circle-check" style="color: var(--verified-blue); margin-left: 5px;" title="Admin"></i>`;
+            }
+            return userName;
+        }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 localUser = user;
+                isAdmin = (user.email === ADMIN_EMAIL);
+                
                 document.getElementById('auth-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'block';
 
@@ -407,8 +421,10 @@
                 await setDoc(userDocRef, { uid: user.uid, name: displayName, email: user.email, phone: phone }, { merge: true });
 
                 initRealtimeSync();
+                listenToNotifications();
             } else {
                 localUser = null;
+                isAdmin = false;
                 document.getElementById('auth-screen').style.display = 'flex';
                 document.getElementById('app-content').style.display = 'none';
             }
@@ -418,7 +434,7 @@
             const email = document.getElementById('auth-email').value.trim();
             const pass = document.getElementById('auth-password').value;
             const mode = document.getElementById('tab-login-mode').classList.contains('active') ? 'login' : 'signup';
-            if(!email || !pass) { showToast("အချက်အလက် ဖြည့်စွက်ရန် ကျန်ရှိနေပါသည်", "error"); return; }
+            if(!email || !pass) return showToast("အချက်အလက် ဖြည့်စွက်ရန် ကျန်ရှိနေပါသည်", "error");
             try {
                 if(mode === "login") await signInWithEmailAndPassword(auth, email, pass);
                 else await createUserWithEmailAndPassword(auth, email, pass);
@@ -443,18 +459,13 @@
         function initRealtimeSync() {
             onSnapshot(collection(db, "users"), (snapshot) => {
                 activeUsersInNetwork = [];
-                let adminExists = false;
                 snapshot.forEach(doc => { 
                     const data = doc.data();
+                    if(data.email === ADMIN_EMAIL) realAdminUid = data.uid;
+                    
                     if(data.uid === localUser.uid) savedPostIds = data.savedPosts || []; 
-                    else {
-                        if(data.uid === 'admin_uid') adminExists = true;
-                        activeUsersInNetwork.push(data); 
-                    }
+                    else activeUsersInNetwork.push(data); 
                 });
-                if(!adminExists) {
-                    activeUsersInNetwork.unshift({ uid: 'admin_uid', name: 'Platform Admin', phone: 'Official Support' });
-                }
                 renderChatList();
             });
 
@@ -466,29 +477,53 @@
 
             onSnapshot(query(collection(db, "chats"), orderBy("timestamp", "asc")), (snapshot) => {
                 let incomingMessages = [];
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === "added") { incomingMessages.push(change.doc.data()); }
-                });
-
+                snapshot.docChanges().forEach(change => { if (change.type === "added") incomingMessages.push(change.doc.data()); });
                 globalChats = [];
                 snapshot.forEach(doc => globalChats.push({ id: doc.id, ...doc.data() }));
                 
-                renderChatMessages();
-                renderChatList(); 
+                renderChatMessages(); renderChatList(); 
 
                 if (!isInitialLoad) {
                     incomingMessages.forEach(msg => {
                         if (msg.room.includes(localUser.uid) && msg.senderUid !== localUser.uid) {
-                            const isChatTabActive = document.querySelector('.tab-btn-chat').classList.contains('active');
-                            if (activeChatUid !== msg.senderUid || !isChatTabActive) {
-                                let sender = activeUsersInNetwork.find(u => u.uid === msg.senderUid) || { name: "အသုံးပြုသူ" };
-                                let txt = msg.type === 'image' ? "📷 ဓာတ်ပုံတစ်ပုံ ပို့လိုက်သည်" : msg.text;
+                            const isChatActive = document.querySelector('.tab-btn-chat').classList.contains('active');
+                            if (activeChatUid !== msg.senderUid || !isChatActive) {
+                                let sender = activeUsersInNetwork.find(u => u.uid === msg.senderUid) || { name: "User" };
+                                let txt = msg.type === 'image' ? "📷 ဓာတ်ပုံတစ်ပုံ" : msg.text;
                                 showToast(`💬 ${sender.name}: ${txt}`);
                             }
                         }
                     });
                 }
                 isInitialLoad = false;
+            });
+        }
+
+        function listenToNotifications() {
+            const q = query(collection(db, "notifications"), where("targetUid", "==", localUser.uid));
+            onSnapshot(q, (snapshot) => {
+                const notiBox = document.getElementById('noti-container');
+                notiBox.innerHTML = '';
+                
+                let notis = [];
+                snapshot.forEach(doc => notis.push(doc.data()));
+                notis.sort((a, b) => b.timestamp - a.timestamp);
+
+                if(notis.length === 0) {
+                    notiBox.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding: 20px;">Notification မရှိသေးပါ</p>`;
+                    return;
+                }
+
+                notis.forEach(noti => {
+                    const date = new Date(noti.timestamp).toLocaleString();
+                    notiBox.innerHTML += `
+                        <div style="background: var(--bg-body); padding: 15px; border-radius: 12px; border-left: 4px solid var(--danger);">
+                            <h4 style="margin-bottom: 5px;">${noti.title}</h4>
+                            <p style="font-size: 14px; color: var(--text-main);">${noti.message}</p>
+                            <span style="font-size: 11px; color: var(--text-muted);">${date}</span>
+                        </div>
+                    `;
+                });
             });
         }
 
@@ -511,15 +546,19 @@
                 const isOwner = post.sellerUid === localUser.uid;
                 const isSaved = savedPostIds.includes(post.id);
                 const isSold = post.status === 'sold';
+                const canDelete = isOwner || isAdmin;
+                const safeTitle = post.title.replace(/'/g, "\\'");
 
-                let actionButtons = isOwner ? `
-                    <button class="btn btn-danger btn-icon" onclick="deletePost('${post.id}')"><i class="fa-solid fa-trash"></i> ဖျက်မည်</button>
-                    ${!isSold ? `<button class="btn btn-warning btn-icon" onclick="markAsSold('${post.id}')"><i class="fa-solid fa-check"></i> ရောင်းပြီးပြီ</button>` : ''}
+                let actionButtons = canDelete ? `
+                    <button class="btn btn-danger btn-icon" onclick="deletePost('${post.id}', '${post.sellerUid}', '${safeTitle}')"><i class="fa-solid fa-trash"></i> ဖျက်မည်</button>
+                    ${(!isSold && isOwner) ? `<button class="btn btn-warning btn-icon" onclick="markAsSold('${post.id}')"><i class="fa-solid fa-check"></i> ရောင်းပြီးပြီ</button>` : ''}
                 ` : `
                     <button class="btn btn-primary btn-icon" onclick="openDirectChat('${post.sellerUid}', '${post.seller}')"><i class="fa-solid fa-comments"></i> Chat</button>
                     <button class="btn btn-secondary btn-icon" onclick="toggleSavePost('${post.id}')"><i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i> ${isSaved ? 'Saved' : 'Save'}</button>
                     <button class="btn btn-danger btn-icon" style="flex:0.5;" onclick="reportPost('${post.id}')"><i class="fa-solid fa-triangle-exclamation"></i></button>
                 `;
+
+                const sellerDisplayName = renderName(post.sellerEmail, post.seller);
 
                 feed.innerHTML += `
                     <div class="card product-card">
@@ -535,7 +574,7 @@
                             <div class="product-price">$${post.price}</div>
                         </div>
                         <p style="font-size:13px; color:var(--text-muted); margin-top:8px;">
-                            Seller: <span class="seller-link" onclick="viewUserProfile('${post.sellerUid}')"><i class="fa-solid fa-user-circle"></i> ${post.seller}</span>
+                            Seller: <span class="seller-link" onclick="viewUserProfile('${post.sellerUid}')"><i class="fa-solid fa-user-circle"></i> ${sellerDisplayName}</span>
                         </p>
                         <p style="font-size:14px; margin-top:10px;">${post.desc}</p>
                         <div class="action-bar">${actionButtons}</div>
@@ -545,11 +584,10 @@
 
         window.viewUserProfile = async function(uid) {
             let user = activeUsersInNetwork.find(u => u.uid === uid);
-            if(!user && uid === 'admin_uid') user = { name: 'Platform Admin', phone: 'Official Support' };
-            if(uid === localUser.uid) user = { name: document.getElementById('user-name').value, phone: document.getElementById('user-phone').value };
+            if(uid === localUser.uid) user = { name: document.getElementById('user-name').value, phone: document.getElementById('user-phone').value, email: localUser.email };
             if(!user) return showToast("အချက်အလက် ရှာမတွေ့ပါ", "error");
 
-            document.getElementById('modalUserName').innerText = user.name;
+            document.getElementById('modalUserName').innerHTML = renderName(user.email, user.name);
             document.getElementById('modalUserPhone').innerText = user.phone || "No phone or bio updated.";
             
             const wallContainer = document.getElementById('userWallPosts');
@@ -575,9 +613,19 @@
             openModal('userProfileModal');
         }
 
-        window.deletePost = function(postId) {
-            showConfirmUI("ဒီပစ္စည်းကို အမှန်တကယ် ဖျက်မှာလား?", async () => {
-                await deleteDoc(doc(db, "posts", postId)); showToast("ဖျက်ပြီးပါပြီ");
+        window.deletePost = function(postId, sellerUid, postTitle) {
+            showConfirmUI("ဤပစ္စည်းကို အမှန်တကယ် ဖျက်မှာလား?", async () => {
+                await deleteDoc(doc(db, "posts", postId)); 
+                showToast("ဖျက်ပြီးပါပြီ");
+
+                if (isAdmin && sellerUid !== localUser.uid) {
+                    await addDoc(collection(db, "notifications"), {
+                        targetUid: sellerUid,
+                        title: "🚨 ပစ္စည်း ဖျက်သိမ်းခံရပါသည်",
+                        message: `သင့်ရဲ့ ပစ္စည်း "${postTitle}" အား User Policy နှင့် မကိုက်ညီသဖြင့် Admin မှ ဖျက်လိုက်ပါသည်။`,
+                        timestamp: Date.now()
+                    });
+                }
             });
         }
 
@@ -587,13 +635,11 @@
             });
         }
 
-        // --- TELEGRAM INTEGRATION: Report ---
         window.reportPost = function(postId) {
             showConfirmUI("ဤပစ္စည်းအား Admin ထံ Report ပို့မှာ သေချာပါသလား?", async () => {
                 await addDoc(collection(db, "reports"), { postId, reporterUid: localUser.uid, timestamp: Date.now() });
                 showToast("Admin ထံသို့ Report ပို့ပြီးပါပြီ။");
 
-                // Telegram သို့ လှမ်းပို့ခြင်း
                 const userName = document.getElementById('user-name').value;
                 const msg = `🚨 <b>New Report Alert</b> 🚨\n\n<b>User:</b> ${userName}\n<b>Post ID:</b> ${postId}\nအထက်ပါ ပစ္စည်းအား စစ်ဆေးရန် Report တင်ထားပါသည်။`;
                 sendToTelegramAdmin(msg);
@@ -601,7 +647,8 @@
         }
 
         window.openAdminChat = function() {
-            openDirectChat('admin_uid', 'Platform Admin');
+            if(!realAdminUid) return showToast("Admin အကောင့် ရှာမတွေ့သေးပါ", "error");
+            openDirectChat(realAdminUid, "Green Market Admin (Support)");
         }
 
         window.toggleSavePost = async function(postId) {
@@ -640,13 +687,19 @@
             const desc = document.getElementById('p-desc').value.trim();
             if(!title || !price || !uploadedImageBase64) return showToast("အချက်အလက် ပြည့်စုံစွာ ဖြည့်ပါ", "error");
 
-            await addDoc(collection(db, "posts"), { title, price, category, desc, image: uploadedImageBase64, status: 'active', seller: document.getElementById('user-name').value, sellerUid: localUser.uid, timestamp: Date.now() });
+            await addDoc(collection(db, "posts"), { 
+                title, price, category, desc, 
+                image: uploadedImageBase64, status: 'active', 
+                seller: document.getElementById('user-name').value, 
+                sellerUid: localUser.uid, 
+                sellerEmail: localUser.email,
+                timestamp: Date.now() 
+            });
             document.getElementById('p-title').value = ''; document.getElementById('p-price').value = ''; document.getElementById('p-desc').value = ''; uploadedImageBase64 = "";
             document.getElementById('imgUploadBtn').style.backgroundImage = ''; document.getElementById('previewText').style.display = 'block';
             showToast("ပစ္စည်းတင်ပြီးပါပြီ။"); switchTab('home');
         });
 
-        // --- TELEGRAM INTEGRATION: Chat System ---
         window.sendChatMessage = async function() {
             const input = document.getElementById('chatInputField');
             const text = input.value.trim();
@@ -655,13 +708,10 @@
             
             await addDoc(collection(db, "chats"), { room: computedRoomId, senderUid: localUser.uid, text: text, type: 'text', timestamp: Date.now() });
             
-            // Admin ထံသို့ စာပို့ခြင်းဖြစ်ပါက Telegram သို့ပါ Noti ပို့မည်
-            if (activeChatUid === 'admin_uid') {
+            if (activeChatUid === realAdminUid) {
                 const userName = document.getElementById('user-name').value;
-                const msg = `💬 <b>Message from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> ${text}\n\n<i>Platform ထဲဝင်၍ ပြန်စာပို့ပါ။</i>`;
-                sendToTelegramAdmin(msg);
+                sendToTelegramAdmin(`💬 <b>Message from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> ${text}\n\n<i>Platform ထဲဝင်၍ ပြန်စာပို့ပါ။</i>`);
             }
-
             input.value = '';
         }
         document.getElementById('sendMsgBtn').addEventListener('click', sendChatMessage);
@@ -683,11 +733,9 @@
                     const computedRoomId = [localUser.uid, activeChatUid].sort().join("_");
                     await addDoc(collection(db, "chats"), { room: computedRoomId, senderUid: localUser.uid, text: "", image: chatImgBase64, type: 'image', timestamp: Date.now() });
 
-                    // Admin ထံသို့ ပုံပို့ခြင်းဖြစ်ပါက Telegram သို့ပါ Noti ပို့မည်
-                    if (activeChatUid === 'admin_uid') {
+                    if (activeChatUid === realAdminUid) {
                         const userName = document.getElementById('user-name').value;
-                        const msg = `📷 <b>Image from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> (ဓာတ်ပုံတစ်ပုံ ပို့လိုက်ပါသည်)\n\n<i>Platform ထဲဝင်၍ စစ်ဆေးပါ။</i>`;
-                        sendToTelegramAdmin(msg);
+                        sendToTelegramAdmin(`📷 <b>Image from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> (ဓာတ်ပုံတစ်ပုံ ပို့လိုက်ပါသည်)\n\n<i>Platform ထဲဝင်၍ စစ်ဆေးပါ။</i>`);
                     }
                 };
                 img.src = evt.target.result;
@@ -715,8 +763,7 @@
 
             if (filteredUsers.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding:30px 20px; color:var(--text-muted); font-size:13px;">
-                    <i class="fa-solid fa-message" style="font-size:24px; color:var(--border); margin-bottom:10px;"></i><br>
-                    စကားပြောဆိုထားမှု မရှိသေးပါ
+                    <i class="fa-solid fa-message" style="font-size:24px; color:var(--border); margin-bottom:10px;"></i><br>စကားပြောဆိုထားမှု မရှိသေးပါ
                 </div>`;
                 return;
             }
@@ -729,16 +776,16 @@
                 let lastMsg = userRoomMsgs[userRoomMsgs.length - 1];
                 let previewText = "စကားပြောဆိုရန်...";
                 
-                if(lastMsg) {
-                    previewText = lastMsg.type === 'image' ? "📷 ဓာတ်ပုံတစ်ပုံ ပို့လိုက်သည်" : lastMsg.text;
-                }
+                if(lastMsg) previewText = lastMsg.type === 'image' ? "📷 ဓာတ်ပုံတစ်ပုံ" : lastMsg.text;
                 if(previewText.length > 24) previewText = previewText.substring(0, 22) + "...";
 
+                const displayHTMLName = renderName(user.email, user.name);
+
                 container.innerHTML += `
-                    <div class="chat-item ${isActive}" onclick="selectChatUser('${user.uid}', '${user.name}')">
+                    <div class="chat-item ${isActive}" onclick="selectChatUser('${user.uid}', '${user.name.replace(/'/g, "\\'")}')">
                         <div class="chat-avatar">${user.name.charAt(0).toUpperCase()}</div>
                         <div class="chat-item-info">
-                            <div class="chat-item-name">${user.name}</div>
+                            <div class="chat-item-name">${displayHTMLName}</div>
                             <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${previewText}</div>
                         </div>
                     </div>`;
@@ -761,7 +808,10 @@
 
         window.selectChatUser = function(uid, name) {
             activeChatUid = uid; activeChatName = name;
-            document.getElementById('chatWindowHeader').innerText = name;
+            let targetUser = activeUsersInNetwork.find(u => u.uid === uid);
+            let email = targetUser ? targetUser.email : "";
+            
+            document.getElementById('chatWindowHeader').innerHTML = renderName(email, name);
             document.getElementById('chatMainBox').classList.add('active-conversation');
             renderChatList(); renderChatMessages();
         };
@@ -770,7 +820,7 @@
             if(sellerUid === localUser.uid) return showToast("မိမိကိုယ်တိုင် ဖြစ်နေပါသည်", "error");
             switchTab('chat'); selectChatUser(sellerUid, sellerName);
         };
-        window.closeChatMobile = function() { document.getElementById('chatMainBox').classList.remove('active-conversation'); activeChatUid = null; }
+        window.closeChatMobile = function() { document.getElementById('chatMainBox').classList.remove('active-conversation'); activeChatUid = null; renderChatList(); }
 
         window.switchTab = function(name) {
             document.querySelectorAll('.tab-content').forEach(el => { el.classList.remove('active'); el.style.display='none'; });

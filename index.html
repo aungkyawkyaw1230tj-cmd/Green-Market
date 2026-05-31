@@ -40,7 +40,6 @@
         body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 90px; -webkit-tap-highlight-color: transparent; transition: background 0.3s, color 0.3s; }
 
         /* --- AUTH SCREEN --- */
-        /* Persistent Login ပြဿနာဖြေရှင်းရန် display: none သတ်မှတ်ထားသည် */
         #auth-screen { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #064e3b, #022c22); align-items: center; justify-content: center; z-index: 20000; padding: 20px; }
         .auth-card { background: var(--white); width: 100%; max-width: 400px; border-radius: 24px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; }
         .auth-logo { font-size: 32px; color: var(--primary); font-weight: 800; margin-bottom: 10px; }
@@ -340,7 +339,7 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // --- TELEGRAM BOT INTEGRATION ---
-        const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'; // Token အသစ်ယူပြီး ဒီမှာထည့်ပါ
+        const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'; 
         const ADMIN_CHAT_ID = '8693193416'; 
 
         window.sendToTelegramAdmin = async function(message) {
@@ -380,6 +379,15 @@
         let uploadedImageBase64 = "";
         let isInitialLoad = true;
 
+        // --- WHITE SCREEN & INSTANT LOAD FIX (Added here) ---
+        if (localStorage.getItem('isLoggedIn') === 'true') {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+        } else {
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('app-content').style.display = 'none';
+        }
+
         if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
 
         window.showConfirmUI = function(msg, callback) {
@@ -397,6 +405,7 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                localStorage.setItem('isLoggedIn', 'true'); // Memory သိမ်းမည်
                 localUser = user;
                 isAdmin = (user.email === ADMIN_EMAIL);
                 
@@ -423,6 +432,7 @@
                 initRealtimeSync();
                 listenToNotifications();
             } else {
+                localStorage.removeItem('isLoggedIn'); // Memory ဖြုတ်မည်
                 localUser = null;
                 isAdmin = false;
                 document.getElementById('auth-screen').style.display = 'flex';
@@ -438,17 +448,27 @@
             try {
                 if(mode === "login") await signInWithEmailAndPassword(auth, email, pass);
                 else await createUserWithEmailAndPassword(auth, email, pass);
+                
+                localStorage.setItem('isLoggedIn', 'true'); // Memory သိမ်းမည်
                 showToast("အောင်မြင်ပါသည်။");
             } catch(err) { showToast("အကောင့်ဝင်ရန် သို့မဟုတ် ဖွင့်ရန် မအောင်မြင်ပါ", "error"); }
         }
         document.getElementById('emailAuthBtn').addEventListener('click', handleEmailAuth);
         
         window.handleGoogleAuth = async function() {
-            try { await signInWithPopup(auth, googleProvider); showToast("Google ဖြင့် အောင်မြင်စွာ ဝင်ရောက်ပါပြီ"); } 
+            try { 
+                await signInWithPopup(auth, googleProvider); 
+                localStorage.setItem('isLoggedIn', 'true'); // Memory သိမ်းမည်
+                showToast("Google ဖြင့် အောင်မြင်စွာ ဝင်ရောက်ပါပြီ"); 
+            } 
             catch(err) { showToast("Google Authentication ဝင်မရဖြစ်နေပါသည်", "error"); }
         }
         document.getElementById('googleAuthBtn').addEventListener('click', handleGoogleAuth);
-        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+        
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth);
+            localStorage.removeItem('isLoggedIn'); // Memory ဖြုတ်မည်
+        });
 
         window.toggleAuthMode = function(mode) {
             document.getElementById('tab-login-mode').classList.toggle('active', mode === 'login');
@@ -489,8 +509,8 @@
                             const isChatActive = document.querySelector('.tab-btn-chat').classList.contains('active');
                             if (activeChatUid !== msg.senderUid || !isChatActive) {
                                 let sender = activeUsersInNetwork.find(u => u.uid === msg.senderUid) || { name: "User" };
-                                let txt = msg.type === 'image' ? "📷 ဓာတ်ပုံတစ်ပုံ" : msg.text;
-                                showToast(`💬 ${sender.name}: ${txt}`);
+                                let txt = msg.type === 'image' ? " ဓာတ်ပုံတစ်ပုံ" : msg.text;
+                                showToast(` ${sender.name}: ${txt}`);
                             }
                         }
                     });
@@ -621,7 +641,7 @@
                 if (isAdmin && sellerUid !== localUser.uid) {
                     await addDoc(collection(db, "notifications"), {
                         targetUid: sellerUid,
-                        title: "🚨 ပစ္စည်း ဖျက်သိမ်းခံရပါသည်",
+                        title: " ပစ္စည်း ဖျက်သိမ်းခံရပါသည်",
                         message: `သင့်ရဲ့ ပစ္စည်း "${postTitle}" အား User Policy နှင့် မကိုက်ညီသဖြင့် Admin မှ ဖျက်လိုက်ပါသည်။`,
                         timestamp: Date.now()
                     });
@@ -641,7 +661,7 @@
                 showToast("Admin ထံသို့ Report ပို့ပြီးပါပြီ။");
 
                 const userName = document.getElementById('user-name').value;
-                const msg = `🚨 <b>New Report Alert</b> 🚨\n\n<b>User:</b> ${userName}\n<b>Post ID:</b> ${postId}\nအထက်ပါ ပစ္စည်းအား စစ်ဆေးရန် Report တင်ထားပါသည်။`;
+                const msg = ` <b>New Report Alert</b> \n\n<b>User:</b> ${userName}\n<b>Post ID:</b> ${postId}\nအထက်ပါ ပစ္စည်းအား စစ်ဆေးရန် Report တင်ထားပါသည်။`;
                 sendToTelegramAdmin(msg);
             });
         }
@@ -710,7 +730,7 @@
             
             if (activeChatUid === realAdminUid) {
                 const userName = document.getElementById('user-name').value;
-                sendToTelegramAdmin(`💬 <b>Message from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> ${text}\n\n<i>Platform ထဲဝင်၍ ပြန်စာပို့ပါ။</i>`);
+                sendToTelegramAdmin(` <b>Message from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> ${text}\n\n<i>Platform ထဲဝင်၍ ပြန်စာပို့ပါ။</i>`);
             }
             input.value = '';
         }
@@ -735,7 +755,7 @@
 
                     if (activeChatUid === realAdminUid) {
                         const userName = document.getElementById('user-name').value;
-                        sendToTelegramAdmin(`📷 <b>Image from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> (ဓာတ်ပုံတစ်ပုံ ပို့လိုက်ပါသည်)\n\n<i>Platform ထဲဝင်၍ စစ်ဆေးပါ။</i>`);
+                        sendToTelegramAdmin(` <b>Image from User</b>\n\n<b>User:</b> ${userName}\n<b>Message:</b> (ဓာတ်ပုံတစ်ပုံ ပို့လိုက်ပါသည်)\n\n<i>Platform ထဲဝင်၍ စစ်ဆေးပါ။</i>`);
                     }
                 };
                 img.src = evt.target.result;
@@ -776,7 +796,7 @@
                 let lastMsg = userRoomMsgs[userRoomMsgs.length - 1];
                 let previewText = "စကားပြောဆိုရန်...";
                 
-                if(lastMsg) previewText = lastMsg.type === 'image' ? "📷 ဓာတ်ပုံတစ်ပုံ" : lastMsg.text;
+                if(lastMsg) previewText = lastMsg.type === 'image' ? " ဓာတ်ပုံတစ်ပုံ" : lastMsg.text;
                 if(previewText.length > 24) previewText = previewText.substring(0, 22) + "...";
 
                 const displayHTMLName = renderName(user.email, user.name);
